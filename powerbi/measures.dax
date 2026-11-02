@@ -1,0 +1,153 @@
+// =====================================================================
+// Medidas DAX del dashboard "Entregas y satisfacción - Olist"
+// Tabla anfitriona: fact_orders (Ingresos, Logística, Calificación)
+//                   risk_orders (Riesgo)
+// Cada medida indica su carpeta de visualización y su formato.
+// =====================================================================
+
+// ---------------- Carpeta: Ingresos ----------------
+
+// Pedidos del periodo (2017-01 a 2018-08), cualquier estado
+[Pedidos] =
+COUNTROWS ( fact_orders )
+// formato: #,0
+
+// Valor bruto de mercancía: precio + flete, sin pedidos cancelados
+[Ingresos (GMV)] =
+CALCULATE (
+    SUM ( fact_orders[gmv] ),
+    fact_orders[delivery_status] <> "canceled"
+)
+// formato: "R$" #,0
+
+[Ticket promedio] =
+CALCULATE (
+    AVERAGE ( fact_orders[gmv] ),
+    fact_orders[delivery_status] <> "canceled"
+)
+// formato: "R$" #,0.00
+
+[Ingresos mes anterior] =
+CALCULATE ( [Ingresos (GMV)], DATEADD ( dim_date[Date], -1, MONTH ) )
+// formato: "R$" #,0
+
+[Crecimiento mensual %] =
+DIVIDE ( [Ingresos (GMV)] - [Ingresos mes anterior], [Ingresos mes anterior] )
+// formato: 0.0%
+
+// ---------------- Carpeta: Logística ----------------
+
+// Pedidos cuyo resultado de entrega se conoce (a tiempo, tarde o no entregado)
+[Pedidos con resultado] =
+CALCULATE ( COUNTROWS ( fact_orders ), NOT ISBLANK ( fact_orders[is_late] ) )
+// formato: #,0
+
+[Pedidos no a tiempo] =
+SUM ( fact_orders[is_late] )
+// formato: #,0
+
+[% a tiempo] =
+1 - DIVIDE ( [Pedidos no a tiempo], [Pedidos con resultado] )
+// formato: 0.0%
+
+[% no a tiempo] =
+DIVIDE ( [Pedidos no a tiempo], [Pedidos con resultado] )
+// formato: 0.0%
+
+[Días prometidos (prom.)] =
+CALCULATE (
+    AVERAGE ( fact_orders[promised_days] ),
+    NOT ISBLANK ( fact_orders[is_late] )
+)
+// formato: 0.0
+
+[Días reales (prom.)] =
+CALCULATE (
+    AVERAGE ( fact_orders[actual_days] ),
+    fact_orders[delivery_status] IN { "on_time", "late" }
+)
+// formato: 0.0
+
+[Días de retraso (prom. tardíos)] =
+CALCULATE (
+    AVERAGE ( fact_orders[days_vs_estimate] ),
+    fact_orders[delivery_status] = "late"
+)
+// formato: 0.0
+
+[Colchón promedio (días)] =
+[Días prometidos (prom.)] - [Días reales (prom.)]
+// formato: 0.0
+
+// ---------------- Carpeta: Calificación ----------------
+
+[Calificación promedio] =
+AVERAGE ( fact_orders[review_score] )
+// formato: 0.00
+
+[Reseñas] =
+COUNT ( fact_orders[review_score] )
+// formato: #,0
+
+[Reseñas negativas] =
+CALCULATE ( COUNT ( fact_orders[review_score] ), fact_orders[review_score] <= 2 )
+// formato: #,0
+
+[% reseñas negativas] =
+DIVIDE ( [Reseñas negativas], [Reseñas] )
+// formato: 0.0%
+
+// Reseñas negativas "de más" por los retrasos: las que tienen los pedidos
+// no a tiempo menos las que tendrían con la tasa de los pedidos a tiempo.
+[Reseñas negativas por retraso] =
+VAR ResenasTarde =
+    CALCULATE ( [Reseñas], fact_orders[is_late] = 1 )
+VAR NegativasTarde =
+    CALCULATE ( [Reseñas negativas], fact_orders[is_late] = 1 )
+// Se filtra por estado (no por is_late = 0) porque en DAX un BLANK es igual a 0
+// y se colarían los pedidos cancelados o en proceso.
+VAR TasaATiempo =
+    CALCULATE ( [% reseñas negativas], fact_orders[delivery_status] = "on_time" )
+RETURN
+    MAX ( 0, NegativasTarde - ResenasTarde * TasaATiempo )
+// formato: #,0
+
+// ---------------- Carpeta: Riesgo (tabla risk_orders) ----------------
+
+[Pedidos evaluados] =
+COUNTROWS ( risk_orders )
+// formato: #,0
+
+[Pedidos marcados] =
+SUM ( risk_orders[flag_high_risk] )
+// formato: #,0
+
+[% pedidos marcados] =
+DIVIDE ( [Pedidos marcados], [Pedidos evaluados] )
+// formato: 0.0%
+
+[% retrasos capturados] =
+DIVIDE (
+    CALCULATE ( SUM ( risk_orders[is_late] ), risk_orders[flag_high_risk] = 1 ),
+    SUM ( risk_orders[is_late] )
+)
+// formato: 0.0%
+
+[Precisión de la alerta] =
+DIVIDE (
+    CALCULATE ( SUM ( risk_orders[is_late] ), risk_orders[flag_high_risk] = 1 ),
+    [Pedidos marcados]
+)
+// formato: 0.0%
+
+[Tasa de retraso (prueba)] =
+DIVIDE ( SUM ( risk_orders[is_late] ), [Pedidos evaluados] )
+// formato: 0.0%
+
+[Probabilidad promedio] =
+AVERAGE ( risk_orders[late_probability] )
+// formato: 0.0%
+
+[Colchón promedio (ratio)] =
+AVERAGE ( risk_orders[promise_ratio] )
+// formato: 0.00"x"

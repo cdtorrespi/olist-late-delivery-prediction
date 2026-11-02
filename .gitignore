@@ -1,7 +1,7 @@
 # Datos originales de Kaggle (se descargan aparte; ver data/README.md)
 data/raw/*.csv
 # Tablas generadas por los scripts
-data/processed/*.csv
+data/processed/**/*.csv
 data/processed/*.parquet
 
 # Python
