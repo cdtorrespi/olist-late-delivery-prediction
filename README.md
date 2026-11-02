@@ -46,11 +46,11 @@ The data model, every DAX measure and the report definition (PBIR) are in [`powe
 
 | Stage | Tools | What it does |
 |---|---|---|
-| 1. Data model | PostgreSQL 16 | Loads 9 raw tables into a **star schema** (`fact_orders`, `fact_order_items` + customer, seller, product, date dimensions). Analysis queries use CTEs and window functions (`LAG`, `RANK`, running totals, Pareto shares). |
+| 1. Data model | PostgreSQL 16 | Loads 9 raw tables into a **dimensional model**: two fact tables at different grains (`fact_orders` per order, `fact_order_items` per item) that share customer, seller, product and date dimensions. Analysis queries use CTEs and window functions (`LAG`, `RANK`, running totals, Pareto shares). |
 | 2. Exploration | pandas, matplotlib | Target balance, time trends, review impact, data quality. |
 | 3. Features | pandas | Leakage-safe history features: a seller's or route's past outcome is used only once it was **known** at purchase time. Verified by brute force. |
 | 4. Model | scikit-learn | Rule vs. logistic regression vs. gradient boosting. Selection on a validation period, out-of-time test, bootstrap CIs, monthly walk-forward backtest, permutation importance. |
-| 5. Dashboard | Power BI (DAX) | Star-schema model, 26 measures in display folders, each validated against SQL. |
+| 5. Dashboard | Power BI (DAX) | Constellation model: two fact tables (orders and risk scores) sharing conformed dimensions, with single-direction one-to-many relationships. 26 measures in display folders, each validated against SQL. |
 
 ### Methodology highlights
 

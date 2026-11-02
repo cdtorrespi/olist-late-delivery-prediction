@@ -27,7 +27,9 @@ Copie esos 5 CSV a una carpeta local. En Power BI, la ruta se define en el pará
 
 ## 2. Modelo de datos
 
-Modelo estrella con dos tablas de hechos que comparten dimensiones. Todas las relaciones son uno a muchos, con filtro en una sola dirección (de la dimensión al hecho).
+Es un **esquema de constelación**: dos tablas de hechos, `fact_orders` (todos los pedidos) y `risk_orders` (pedidos del periodo de prueba con su riesgo), comparten las mismas dimensiones de fecha, cliente y vendedor. Así, un solo filtro de fecha o de estado actúa sobre las dos a la vez.
+
+Todas las relaciones son de uno a muchos, de la dimensión hacia el hecho, y filtran en una sola dirección. Esto evita ambigüedades entre las dos tablas de hechos.
 
 ```
 dim_date[Date]              1 ──< fact_orders[purchase_date]
