@@ -1,0 +1,20 @@
+# Datos originales de Kaggle (se descargan aparte; ver data/README.md)
+data/raw/*.csv
+# Tablas generadas por los scripts
+data/processed/*.csv
+data/processed/*.parquet
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Power BI
+*.pbix.bak
+.pbi/
+
+# Sistema
+.DS_Store
+Thumbs.db

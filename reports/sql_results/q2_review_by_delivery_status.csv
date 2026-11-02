@@ -1,0 +1,4 @@
+delivery_status,orders,reviews,avg_review,negative_pct,five_star_pct
+on_time,89672,89182,4.29,9.2,62.3
+late,6531,6378,2.27,62.4,16.5
+not_delivered,1097,1024,2.00,69.4,11.6
