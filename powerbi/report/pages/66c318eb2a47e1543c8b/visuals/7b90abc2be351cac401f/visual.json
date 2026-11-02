@@ -1,0 +1,365 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "7b90abc2be351cac401f",
+  "position": {
+    "x": 336,
+    "y": 204,
+    "z": 8,
+    "height": 500,
+    "width": 920,
+    "tabOrder": 8
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "risk_orders"
+                    }
+                  },
+                  "Property": "order_id"
+                }
+              },
+              "queryRef": "risk_orders.order_id",
+              "nativeQueryRef": "order_id",
+              "displayName": "Pedido"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "risk_orders"
+                    }
+                  },
+                  "Property": "purchase_date"
+                }
+              },
+              "queryRef": "risk_orders.purchase_date",
+              "nativeQueryRef": "purchase_date",
+              "displayName": "Compra"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "risk_orders"
+                    }
+                  },
+                  "Property": "route"
+                }
+              },
+              "queryRef": "risk_orders.route",
+              "nativeQueryRef": "route",
+              "displayName": "Ruta"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "risk_orders"
+                    }
+                  },
+                  "Property": "promised_days"
+                }
+              },
+              "queryRef": "risk_orders.promised_days",
+              "nativeQueryRef": "promised_days",
+              "displayName": "Días prometidos"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "risk_orders"
+                    }
+                  },
+                  "Property": "route_hist_days"
+                }
+              },
+              "queryRef": "risk_orders.route_hist_days",
+              "nativeQueryRef": "route_hist_days",
+              "displayName": "Días ruta (90 d)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "risk_orders"
+                    }
+                  },
+                  "Property": "promise_ratio"
+                }
+              },
+              "queryRef": "risk_orders.promise_ratio",
+              "nativeQueryRef": "promise_ratio",
+              "displayName": "Colchón"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "risk_orders"
+                    }
+                  },
+                  "Property": "late_probability"
+                }
+              },
+              "queryRef": "risk_orders.late_probability",
+              "nativeQueryRef": "late_probability",
+              "displayName": "Prob. retraso"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "risk_orders"
+                    }
+                  },
+                  "Property": "flag_high_risk"
+                }
+              },
+              "queryRef": "risk_orders.flag_high_risk",
+              "nativeQueryRef": "flag_high_risk",
+              "displayName": "Alerta"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "risk_orders"
+                    }
+                  },
+                  "Property": "delivery_status_label"
+                }
+              },
+              "queryRef": "risk_orders.delivery_status_label",
+              "nativeQueryRef": "delivery_status_label",
+              "displayName": "Resultado"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "risk_orders"
+                  }
+                },
+                "Property": "promise_ratio"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": false
+      }
+    },
+    "objects": {
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0B0B0B'"
+                    }
+                  }
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E8E7E3'"
+                    }
+                  }
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Pedidos ordenados por riesgo (colchón más corto primero)'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0B0B0B'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'left'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

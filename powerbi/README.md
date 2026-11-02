@@ -102,7 +102,7 @@ Use una sola fuente (Segoe UI), sin bordes ni sombras en los visuales, títulos 
 
 | Visual | Posición | Campos |
 |---|---|---|
-| Mapa coroplético | 24, 72, 560 × 626 | Ubicación: `dim_customer[state_name]`; color: `[% no a tiempo]` con degradado de `#FDE6DB` a `#EB6834`; información sobre herramientas: `[Pedidos]`, `[Días reales (prom.)]`. En Formato → Categoría de datos, marque `state_name` como "Estado o provincia" y `country` como "País". Título: "% de pedidos no a tiempo por estado del cliente" |
+| Gráfico de barras | 24, 84, 560 × 620 | Eje Y: `dim_customer[state]`; valores: `[% no a tiempo]` en naranja, con etiquetas, orden descendente. Título: "% de pedidos no a tiempo por estado del cliente". Se eligieron barras en lugar de un mapa porque comparan 27 estados con más precisión y no dependen del servicio de mapas. |
 | Gráfico de líneas | 600, 72, 656 × 300 | Eje X: `dim_date[year_month]`; valores: `[Días prometidos (prom.)]` en azul y `[Días reales (prom.)]` en aqua. Título: "Plazo prometido vs. real" |
 | Tabla | 600, 388, 656 × 310 | `dim_seller[seller_id]`, `dim_seller[state]`, `[Pedidos con resultado]`, `[Pedidos no a tiempo]`, `[% no a tiempo]`, `[Calificación promedio]`. Filtro del visual: `[Pedidos con resultado]` ≥ 50. Orden: `[Pedidos no a tiempo]` descendente. Formato condicional en `[% no a tiempo]`: barras de datos naranjas. Título: "Vendedores con más pedidos tarde" |
 
@@ -122,6 +122,15 @@ Agregue debajo del título de la página 3 un cuadro de texto en 10 pt, color `#
 
 > Alerta = colchón del plazo (días prometidos ÷ días que tardó la ruta en los últimos 90 días) por debajo del percentil 10 de los 30 días previos. La probabilidad viene de una regresión logística de referencia.
 
-## 5. Publicar
+## 5. Definición del reporte
+
+La carpeta [`report/`](report/) contiene las 3 páginas en formato PBIR (Power BI Project): un `page.json` por página y un `visual.json` por visual, con posición, campos y formato. Para usarla:
+
+1. Guarde su archivo como proyecto (Archivo → Guardar como → *Power BI project files (.pbip)*).
+2. Cierre Power BI.
+3. Copie `report/pages/` sobre `<proyecto>.Report/definition/pages/`.
+4. Vuelva a abrir el `.pbip`.
+
+## 6. Publicar
 
 Power BI Desktop → Archivo → Exportar → PDF para una versión estática. Si tiene una cuenta laboral, también puede usar Publicar → "Publicar en la web".

@@ -28,9 +28,19 @@
 
 ## Dashboard
 
-![Power BI dashboard](assets/dashboard.png)
+![Power BI dashboard: executive page](assets/dashboard.png)
 
-Three pages in Power BI: **Executive** (revenue, orders, on-time %, rating), **Logistics** (late deliveries by state, promised vs. actual days, sellers) and **Risk** (test-period orders ranked by risk). The data model and every DAX measure are documented in [`powerbi/`](powerbi/).
+Three pages in Power BI:
+
+- **Executive:** revenue, orders, on-time %, rating.
+- **Logistics:** late deliveries by state, promised vs. actual days, sellers.
+- **Risk:** test-period orders ranked by risk.
+
+| Logistics | Risk |
+|---|---|
+| ![Logistics page](assets/dashboard_logistica.png) | ![Risk page](assets/dashboard_riesgo.png) |
+
+The data model, every DAX measure and the report definition (PBIR) are in [`powerbi/`](powerbi/).
 
 ## How it was built
 
