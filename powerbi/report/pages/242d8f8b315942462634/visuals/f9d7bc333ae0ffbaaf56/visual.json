@@ -28,7 +28,7 @@
               },
               "queryRef": "fact_orders.Reseñas negativas por retraso",
               "nativeQueryRef": "Reseñas negativas por retraso",
-              "displayName": "Reseñas negativas extra"
+              "displayName": "Negativas extra"
             },
             {
               "field": {

@@ -85,6 +85,9 @@
                 }
               }
             }
+          },
+          "selector": {
+            "metadata": "fact_orders.% no a tiempo"
           }
         }
       ],
