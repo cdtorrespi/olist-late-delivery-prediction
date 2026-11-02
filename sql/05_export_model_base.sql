@@ -1,6 +1,6 @@
 -- =====================================================================
 -- 05_export_model_base.sql
--- Exporta desde el modelo estrella las tablas que usan los notebooks
+-- Exporta desde el modelo dimensional las tablas que usan los notebooks
 -- de Python y el dashboard de Power BI.
 -- Uso (desde la raíz del repositorio):
 --   psql -d olist -v out_dir="$PWD/data/processed" -f sql/05_export_model_base.sql
@@ -62,7 +62,7 @@ WHERE o.in_analysis_window
 \set c '\\copy (SELECT * FROM analytics.v_model_base ORDER BY purchase_ts) TO ' :'f' ' WITH (FORMAT csv, HEADER true)'
 :c
 
--- Tablas del modelo estrella para Power BI
+-- Tablas del modelo dimensional para Power BI
 \set f :out_dir '/pbi_fact_orders.csv'
 \set c '\\copy (SELECT order_id, customer_id, main_seller_id AS seller_id, main_product_id AS product_id, order_status, delivery_status, is_late, purchase_date, estimated_date, delivered_ts::DATE AS delivered_date, promised_days, actual_days, days_vs_estimate, n_items, items_value, freight_value, gmv, max_distance_km, main_payment_type, review_score FROM analytics.fact_orders WHERE in_analysis_window ORDER BY purchase_date) TO ' :'f' ' WITH (FORMAT csv, HEADER true)'
 :c

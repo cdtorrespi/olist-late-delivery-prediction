@@ -1,8 +1,8 @@
 # Dashboard de Power BI
 
-El dashboard tiene tres páginas: **Ejecutiva**, **Logística** y **Riesgo**. Se alimenta de las tablas que generan los scripts del proyecto.
+El reporte tiene tres páginas, **Ejecutiva**, **Logística** y **Riesgo**, y se alimenta de las tablas que generan los scripts del proyecto.
 
-## 1. Datos
+## Datos
 
 Desde la raíz del repositorio:
 
@@ -12,24 +12,24 @@ psql -d olist -v out_dir="$PWD/data/processed" -f sql/05_export_model_base.sql
 python src/export_powerbi.py
 ```
 
-Esto deja en `data/processed/powerbi/`:
+El script deja estas tablas en `data/processed/powerbi/`:
 
 | Tabla | Grano | Filas |
 |---|---|---:|
-| `fact_orders` | pedido (compras 2017-01 a 2018-08) | 99,092 |
-| `risk_orders` | pedido del periodo de prueba (abr-ago 2018) con su riesgo | 32,453 |
+| `fact_orders` | pedido (compras de enero de 2017 a agosto de 2018) | 99,092 |
+| `risk_orders` | pedido del periodo de prueba (abril a agosto de 2018) con su riesgo | 32,453 |
 | `dim_customer` | cliente | 99,092 |
 | `dim_seller` | vendedor | 3,095 |
 | `dim_product` | producto | 32,951 |
 | `dim_date` | día (tabla calculada en DAX) | 608 |
 
-Copie esos 5 CSV a una carpeta local. En Power BI, la ruta se define en el parámetro de Power Query **`DataFolder`** (Transformar datos → Administrar parámetros); la ruta debe terminar en `\`. Cada tabla se carga con `Csv.Document(File.Contents(DataFolder & "<tabla>.csv"))` y tipos explícitos.
+En Power BI, la carpeta de los CSV se define en el parámetro de Power Query `DataFolder`, que se cambia en Transformar datos → Administrar parámetros. La ruta debe terminar en `\`. Cada tabla se carga con `Csv.Document` y tipos de datos explícitos.
 
-## 2. Modelo de datos
+## Modelo de datos
 
-Es un **esquema de constelación**: dos tablas de hechos, `fact_orders` (todos los pedidos) y `risk_orders` (pedidos del periodo de prueba con su riesgo), comparten las mismas dimensiones de fecha, cliente y vendedor. Así, un solo filtro de fecha o de estado actúa sobre las dos a la vez.
+Es un esquema de constelación: dos tablas de hechos, `fact_orders` (todos los pedidos) y `risk_orders` (pedidos del periodo de prueba con su riesgo), comparten las dimensiones de fecha, cliente y vendedor. Gracias a eso, un mismo filtro de fecha o de estado actúa sobre las dos.
 
-Todas las relaciones son de uno a muchos, de la dimensión hacia el hecho, y filtran en una sola dirección. Esto evita ambigüedades entre las dos tablas de hechos.
+Todas las relaciones son de uno a muchos, de la dimensión al hecho, y filtran en una sola dirección para que no haya caminos ambiguos entre las dos tablas de hechos.
 
 ```
 dim_date[Date]              1 ──< fact_orders[purchase_date]
@@ -42,7 +42,7 @@ dim_customer[customer_id]   1 ──< risk_orders[customer_id]
 dim_seller[seller_id]       1 ──< risk_orders[seller_id]
 ```
 
-`dim_date` es una tabla calculada, marcada como tabla de fechas:
+`dim_date` es una tabla calculada, marcada como tabla de fechas para que funcionen las funciones de inteligencia de tiempo:
 
 ```dax
 dim_date =
@@ -56,83 +56,28 @@ ADDCOLUMNS (
 )
 ```
 
-Las columnas de llaves (`*_id`) y las que no se usan en visuales están ocultas. Las medidas están en `measures.dax`, organizadas en cuatro carpetas: Ingresos, Logística, Calificación y Riesgo.
+Las llaves y las columnas que no se usan en visuales están ocultas. Las 26 medidas están en [`measures.dax`](measures.dax), agrupadas en cuatro carpetas: Ingresos, Logística, Calificación y Riesgo.
 
-## 3. Validación contra SQL
+## Validación
 
-Cada medida se comparó con la misma cifra calculada en PostgreSQL. Las 26 coinciden; el detalle, incluido un error de DAX que se encontró y corrigió, está en [`validation.md`](validation.md).
+Comparé cada medida con la misma cifra calculada en PostgreSQL y todas coinciden. En [`validation.md`](validation.md) está la tabla completa, junto con un error de DAX que encontré en el proceso y cómo lo corregí.
 
-## 4. Diseño de las páginas
+## Páginas
 
-Lienzo 16:9 (1280 × 720 px).
+Las tres páginas miden 1280 × 720 px y comparten la misma estructura: título, subtítulo y un filtro de fecha de compra en la esquina superior derecha. La paleta es sobria: azul `#2A78D6` para la serie principal, naranja `#EB6834` para retrasos y alertas, y aqua `#1BAF7A` como segunda serie de comparación.
 
-### Paleta
+**Ejecutiva.** Arriba, cuatro tarjetas: ingresos (GMV), pedidos, % a tiempo y calificación promedio. Debajo, dos gráficos con el mismo eje de meses: los ingresos por mes y el % de pedidos no a tiempo. Puse estas dos series en gráficos separados y no en uno combinado de dos ejes, porque con dos escalas en el mismo gráfico la relación visual entre ellas depende de cómo se ajusten los ejes. A la derecha, la calificación promedio según cómo terminó la entrega y una tarjeta con el impacto de los retrasos: reseñas negativas extra, % de reseñas negativas, días de retraso promedio y ticket promedio.
 
-| Uso | Color |
-|---|---|
-| Fondo | `#FCFCFB` |
-| Texto principal | `#0B0B0B` |
-| Texto secundario | `#52514E` |
-| Serie principal | `#2A78D6` (azul) |
-| Retrasos / alerta | `#EB6834` (naranja) |
-| Comparación | `#1BAF7A` (aqua) |
-| Referencia | `#A3A29D` (gris) |
+**Logística.** El % de pedidos no a tiempo por estado del cliente, ordenado de mayor a menor. Usé barras en lugar de un mapa porque comparan los 27 estados con más precisión y no dependen del servicio de mapas de Power BI. A la derecha, la evolución del plazo prometido contra el real y una tabla con los vendedores que más pedidos entregaron tarde.
 
-Use una sola fuente (Segoe UI), sin bordes ni sombras en los visuales, títulos alineados a la izquierda en 14 pt y etiquetas en 10 pt.
+**Riesgo.** Cuatro tarjetas con el resultado de la alerta en el periodo de prueba: pedidos marcados, % de retrasos capturados, precisión y tasa base. Dos filtros, por estado del cliente y del vendedor, y una tabla con todos los pedidos ordenados del colchón más corto al más amplio, con su probabilidad de retraso y el resultado real.
 
-### Elementos comunes (las tres páginas)
+La alerta marca un pedido cuando su colchón (días prometidos ÷ días que tardó su ruta en los últimos 90 días) queda por debajo del percentil 10 de los 30 días anteriores. La probabilidad de la tabla viene de la regresión logística, que sirve como referencia.
 
-- **Título** (cuadro de texto, x 24, y 16, 900 × 40): nombre de la página en 20 pt negrita.
-- **Segmentación de fecha** (x 960, y 16, 296 × 40): `dim_date[Date]`, estilo "Entre". Sincronícela en las tres páginas (Ver → Sincronizar segmentaciones).
+## Definición del reporte
 
-### Página 1 · Ejecutiva
+La carpeta [`report/`](report/) contiene las tres páginas en formato PBIR: un `page.json` por página y un `visual.json` por visual, con su posición, campos y formato. Para usarlas en otro archivo:
 
-| Visual | Posición (x, y, ancho × alto) | Campos |
-|---|---|---|
-| Tarjeta | 24, 72, 296 × 110 | `[Ingresos (GMV)]` |
-| Tarjeta | 336, 72, 296 × 110 | `[Pedidos]` |
-| Tarjeta | 648, 72, 296 × 110 | `[% a tiempo]` |
-| Tarjeta | 960, 72, 296 × 110 | `[Calificación promedio]` |
-| Gráfico de columnas | 24, 198, 816 × 242 | Eje X: `dim_date[year_month]`; valores: `[Ingresos (GMV)]` en azul. Título: "Ingresos por mes" |
-| Gráfico de líneas | 24, 456, 816 × 242 | Eje X: `dim_date[year_month]`; valores: `[% no a tiempo]` en naranja, con marcadores y etiquetas de datos solo en el valor máximo. Título: "% de pedidos no a tiempo por mes" |
-| Gráfico de barras agrupadas | 856, 198, 400 × 242 | Eje Y: `fact_orders[delivery_status_label]`; valores: `[Calificación promedio]`. Barra "Tarde" y "No entregado" en naranja, el resto en azul. Título: "Calificación según la entrega" |
-| Tarjeta de varias filas | 856, 456, 400 × 242 | `[Reseñas negativas por retraso]`, `[% reseñas negativas]`, `[Ticket promedio]`, `[Crecimiento mensual %]` |
-
-**Nota de diseño:** los ingresos y el % no a tiempo van en dos gráficos apilados con el mismo eje X, no en un gráfico combinado de dos ejes. Con dos escalas distintas en un mismo gráfico, la relación visual entre las series depende de cómo se ajusten los ejes y se presta a lecturas equivocadas.
-
-### Página 2 · Logística
-
-| Visual | Posición | Campos |
-|---|---|---|
-| Gráfico de barras | 24, 84, 560 × 620 | Eje Y: `dim_customer[state]`; valores: `[% no a tiempo]` en naranja, con etiquetas, orden descendente. Título: "% de pedidos no a tiempo por estado del cliente". Se eligieron barras en lugar de un mapa porque comparan 27 estados con más precisión y no dependen del servicio de mapas. |
-| Gráfico de líneas | 600, 72, 656 × 300 | Eje X: `dim_date[year_month]`; valores: `[Días prometidos (prom.)]` en azul y `[Días reales (prom.)]` en aqua. Título: "Plazo prometido vs. real" |
-| Tabla | 600, 388, 656 × 310 | `dim_seller[seller_id]`, `dim_seller[state]`, `[Pedidos con resultado]`, `[Pedidos no a tiempo]`, `[% no a tiempo]`, `[Calificación promedio]`. Filtro del visual: `[Pedidos con resultado]` ≥ 50. Orden: `[Pedidos no a tiempo]` descendente. Formato condicional en `[% no a tiempo]`: barras de datos naranjas. Título: "Vendedores con más pedidos tarde" |
-
-### Página 3 · Riesgo (abr-ago 2018)
-
-| Visual | Posición | Campos |
-|---|---|---|
-| Tarjeta | 24, 72, 296 × 110 | `[Pedidos marcados]` |
-| Tarjeta | 336, 72, 296 × 110 | `[% retrasos capturados]` |
-| Tarjeta | 648, 72, 296 × 110 | `[Precisión de la alerta]` |
-| Tarjeta | 960, 72, 296 × 110 | `[Tasa de retraso (prueba)]` (como referencia) |
-| Segmentación | 24, 198, 296 × 240 | `dim_customer[state]` (lista con búsqueda) |
-| Segmentación | 24, 454, 296 × 244 | `dim_seller[state]` |
-| Tabla | 336, 198, 920 × 500 | `risk_orders[order_id]`, `risk_orders[purchase_date]`, `risk_orders[route]`, `risk_orders[promised_days]`, `risk_orders[route_hist_days]`, `risk_orders[promise_ratio]`, `risk_orders[late_probability]`, `risk_orders[flag_high_risk]`, `risk_orders[delivery_status_label]`. Orden: `promise_ratio` ascendente. Formato condicional: `promise_ratio` con fondo de naranja (bajo) a blanco (alto); `late_probability` con barras de datos. Título: "Pedidos ordenados por riesgo (colchón más corto primero)" |
-
-Agregue debajo del título de la página 3 un cuadro de texto en 10 pt, color `#52514E`:
-
-> Alerta = colchón del plazo (días prometidos ÷ días que tardó la ruta en los últimos 90 días) por debajo del percentil 10 de los 30 días previos. La probabilidad viene de una regresión logística de referencia.
-
-## 5. Definición del reporte
-
-La carpeta [`report/`](report/) contiene las 3 páginas en formato PBIR (Power BI Project): un `page.json` por página y un `visual.json` por visual, con posición, campos y formato. Para usarla:
-
-1. Guarde su archivo como proyecto (Archivo → Guardar como → *Power BI project files (.pbip)*).
-2. Cierre Power BI.
-3. Copie `report/pages/` sobre `<proyecto>.Report/definition/pages/`.
-4. Vuelva a abrir el `.pbip`.
-
-## 6. Publicar
-
-Power BI Desktop → Archivo → Exportar → PDF para una versión estática. Si tiene una cuenta laboral, también puede usar Publicar → "Publicar en la web".
+1. Guarda el archivo como proyecto de Power BI (Archivo → Guardar como → *Power BI project files (.pbip)*) y cierra Power BI.
+2. Copia `report/pages/` sobre `<proyecto>.Report/definition/pages/`.
+3. Vuelve a abrir el `.pbip`.

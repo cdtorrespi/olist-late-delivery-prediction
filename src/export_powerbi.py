@@ -1,5 +1,5 @@
 """
-Prepara las tablas que importa Power BI (modelo estrella + riesgo del modelo).
+Prepara las tablas que importa Power BI: el modelo dimensional y el riesgo de cada pedido del periodo de prueba.
 
 Entrada: los CSV que generan sql/05_export_model_base.sql y
 notebooks/03_model.ipynb en data/processed/.

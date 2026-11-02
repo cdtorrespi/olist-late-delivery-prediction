@@ -1,17 +1,15 @@
-# Validación de medidas DAX contra SQL
+# Validación de las medidas DAX
 
-Cada medida del modelo de Power BI se ejecutó con una consulta DAX y se comparó con la misma cifra calculada en PostgreSQL sobre `analytics.fact_orders`, filtrada a `in_analysis_window`. Las medidas de riesgo se compararon con `data/processed/test_predictions.csv`.
+Ejecuté cada medida del modelo con una consulta DAX y comparé el resultado con la misma cifra calculada en PostgreSQL sobre `analytics.fact_orders`, filtrada a `in_analysis_window`. Las medidas de riesgo las comparé con `data/processed/test_predictions.csv`. Las 26 coinciden.
 
-**Resultado:** las 26 medidas coinciden.
-
-| Medida | DAX (Power BI) | Referencia (SQL / Python) | ¿Coincide? |
+| Medida | Power BI | Referencia (SQL o Python) | ¿Coincide? |
 |---|---:|---:|:---:|
 | Pedidos | 99,092 | 99,092 | Sí |
 | Ingresos (GMV) | R$ 15,688,396.64 | R$ 15,688,396.64 | Sí |
 | Ticket promedio | R$ 160.24 | R$ 160.24 | Sí |
-| Ingresos (GMV), mar 2018 | R$ 1,152,785.45 | R$ 1,152,785.45 | Sí |
-| Ingresos mes anterior, mar 2018 | R$ 980,154.60 | R$ 980,154.60 | Sí |
-| Crecimiento mensual %, mar 2018 | 17.6% | 17.6% | Sí |
+| Ingresos (GMV), marzo de 2018 | R$ 1,152,785.45 | R$ 1,152,785.45 | Sí |
+| Ingresos mes anterior, marzo de 2018 | R$ 980,154.60 | R$ 980,154.60 | Sí |
+| Crecimiento mensual %, marzo de 2018 | 17.6% | 17.6% | Sí |
 | Pedidos con resultado | 97,300 | 97,300 | Sí |
 | Pedidos no a tiempo | 7,628 | 7,628 | Sí |
 | % a tiempo | 92.16% | 92.16% | Sí |
@@ -25,7 +23,7 @@ Cada medida del modelo de Power BI se ejecutó con una consulta DAX y se compar�
 | Reseñas | 98,330 | 98,330 | Sí |
 | Reseñas negativas | 14,382 | 14,382 | Sí |
 | % reseñas negativas | 14.63% | 14.63% | Sí |
-| Reseñas negativas por retraso | 4,008 | 4,008 (`q4_negative_reviews_attribution.csv`) | Sí, después de la corrección |
+| Reseñas negativas por retraso | 4,008 | 4,008 | Sí, tras la corrección |
 | Pedidos evaluados | 32,453 | 32,453 | Sí |
 | Pedidos marcados | 4,219 | 4,219 | Sí |
 | % pedidos marcados | 13.0% | 13.0% | Sí |
@@ -35,8 +33,8 @@ Cada medida del modelo de Power BI se ejecutó con una consulta DAX y se compar�
 | Probabilidad promedio | 8.7% | 8.7% | Sí |
 | Colchón promedio (ratio) | 1.87x | 1.87x | Sí |
 
-## Error encontrado y corregido
+## Un error que encontré
 
-La primera versión de **Reseñas negativas por retraso** daba 3,903 en lugar de 4,008. La medida filtraba los pedidos a tiempo con `fact_orders[is_late] = 0`, pero en DAX **un valor en blanco es igual a 0**. Por eso el filtro también incluía los 1,746 pedidos cancelados o en proceso, que tienen 83% de reseñas negativas, e inflaba la tasa de referencia de 9.2% a 10.7%.
+La primera versión de "Reseñas negativas por retraso" daba 3,903 en lugar de 4,008. La medida tomaba los pedidos a tiempo con el filtro `fact_orders[is_late] = 0`, pero en DAX un valor en blanco se considera igual a 0. Así, el filtro también incluía los 1,746 pedidos cancelados o en proceso, que tienen 83% de reseñas negativas, y la tasa de referencia subía de 9.2% a 10.7%.
 
-Se corrigió filtrando por `fact_orders[delivery_status] = "on_time"`.
+Lo corregí filtrando por `fact_orders[delivery_status] = "on_time"`.

@@ -1,6 +1,6 @@
 -- =====================================================================
 -- 04_analysis.sql
--- Consultas de análisis sobre el modelo estrella. Cada resultado se
+-- Consultas de análisis sobre el modelo dimensional. Cada resultado se
 -- exporta a reports/sql_results/ para el reporte y el dashboard.
 -- Uso (desde la raíz del repositorio):
 --   psql -d olist -v out_dir="$PWD/reports/sql_results" -f sql/04_analysis.sql

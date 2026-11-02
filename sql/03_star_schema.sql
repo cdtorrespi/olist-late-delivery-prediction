@@ -1,6 +1,6 @@
 -- =====================================================================
 -- 03_star_schema.sql
--- Construye el modelo estrella en el esquema "analytics":
+-- Construye el modelo dimensional en el esquema "analytics":
 --   dim_customer, dim_seller, dim_product, dim_date, dim_geo_zip
 --   fact_order_items (grano: artículo de un pedido)
 --   fact_orders      (grano: pedido)  <- tabla central del análisis
