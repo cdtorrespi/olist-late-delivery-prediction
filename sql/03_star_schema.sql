@@ -5,7 +5,7 @@
 --   fact_order_items (grano: artículo de un pedido)
 --   fact_orders      (grano: pedido)  <- tabla central del análisis
 --
--- Decisiones clave (ver docs/decisions.md):
+-- Decisiones clave (ver reports/reporte_tecnico.pdf):
 --   * La fecha estimada de entrega no tiene hora (siempre 00:00), así que
 --     un pedido es "tarde" cuando el DÍA de entrega es posterior al día
 --     estimado. Entregar el mismo día estimado cuenta como a tiempo.
