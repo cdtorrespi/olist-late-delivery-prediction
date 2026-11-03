@@ -36,7 +36,7 @@ CATEGORICAL_FEATURES = [
     "main_payment_type",
 ]
 
-# Variables descartadas a propósito (ver reports/reporte_tecnico.pdf): el mes de compra,
+# Variables descartadas a propósito (ver el README): el mes de compra,
 # el número absoluto de pedidos de la plataforma y los conteos absolutos del
 # vendedor. Las tres crecen o cambian con el tiempo, el modelo las usa para
 # memorizar la época del entrenamiento y empeoran la prueba fuera de periodo.

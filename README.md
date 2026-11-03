@@ -73,7 +73,6 @@ El modelo de datos, las medidas DAX y la definición del reporte están en [`pow
 │   └── plot_style.py
 ├── powerbi/                        # modelo de datos, medidas DAX, páginas del reporte y validación
 ├── reports/
-│   ├── reporte_tecnico.pdf         # reporte técnico
 │   ├── model_metrics.json          # configuración y resultados de los experimentos
 │   ├── figures/
 │   └── sql_results/                # resultados de 04_analysis.sql
