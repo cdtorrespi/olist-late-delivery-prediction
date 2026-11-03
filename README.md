@@ -1,22 +1,28 @@
 # Riesgo de entrega tardía en Olist: SQL, machine learning y Power BI
 
-Proyecto para identificar, al momento de la compra, qué pedidos de un marketplace en línea tienen más riesgo de llegar tarde. Con esa información se puede prometer una fecha más realista o acelerar esos pedidos antes de que el cliente deje una mala reseña.
+En un marketplace en línea, un pedido que llega tarde casi siempre termina en una mala reseña, y las malas reseñas pesan en las ventas futuras del vendedor y de la plataforma. El daño ocurre después de la compra, pero la oportunidad de evitarlo está antes: al momento de comprar todavía se puede prometer una fecha más realista o darle prioridad al envío.
 
-Usé 100 mil pedidos reales de Olist, un marketplace brasileño: PostgreSQL para el modelo de datos, Python para el análisis y el modelo, y Power BI para el dashboard.
+Con 100 mil pedidos reales de Olist, un marketplace brasileño, quise responder si es posible saber desde la compra qué pedidos van a llegar tarde, y qué tanto vale la pena hacerlo. Usé PostgreSQL para el modelo de datos, Python para el análisis y el modelo, y Power BI para el dashboard.
 
-## Hallazgos
+## Lo que encontré
 
-Los retrasos son la principal causa de las malas reseñas. Los pedidos tardíos promedian 2.3 estrellas contra 4.3 de los que llegan a tiempo, y el 62% de sus reseñas son negativas (1 o 2 estrellas), contra 9% en los pedidos puntuales. En total, los retrasos explican unas 4,000 reseñas negativas adicionales, el 31% de todas las del periodo.
+### Los retrasos explican buena parte de las malas reseñas
 
-La mejor señal de alerta es el margen que deja la fecha prometida. La mido como una razón: días prometidos entre lo que tardó la misma ruta (estado del vendedor a estado del cliente) en los últimos 90 días. Entre los pedidos con la razón más ajustada, el 19% llega tarde; entre los de mayor margen, menos del 4%.
+Lo primero fue confirmar que el problema importaba. Los pedidos tardíos promedian 2.3 estrellas contra 4.3 de los que llegan a tiempo, y el 62% de sus reseñas son negativas (1 o 2 estrellas), contra 9% en los pedidos puntuales. En total, los retrasos explican unas 4,000 reseñas negativas adicionales, el 31% de todas las del periodo.
 
-Esa razón por sí sola supera a los modelos de machine learning. Si se marca el 10% de pedidos con la razón más ajustada, se detecta el 29.4% de todos los retrasos (IC 95%: 27.4–31.3%), unas tres veces lo que detectaría una selección al azar. Lo evalué en abril–agosto de 2018, un periodo que ningún modelo vio durante el desarrollo. La regresión logística y el gradient boosting, entrenados con 26 variables, detectaron unos 3.5 puntos porcentuales menos, y la diferencia es estadísticamente significativa.
+### El riesgo está en la promesa, no solo en el envío
 
-Un backtest mes por mes confirma lo mismo. Los tiempos de entrega de Olist cambiaron rápido en 2018 y los modelos envejecieron mal: el gradient boosting quedó por debajo del azar en agosto de 2018, mientras que la razón nunca bajó de 16.7%.
+La señal más fuerte no estaba en el producto ni en el vendedor, sino en qué tan ajustada era la fecha prometida. En la importancia por permutación del modelo, esa variable pesa casi el triple que la siguiente. Lo medí como una razón: días prometidos entre lo que tardó la misma ruta (estado del vendedor a estado del cliente) en los últimos 90 días. Entre los pedidos con la razón más ajustada, el 19% llega tarde; entre los de mayor margen, menos del 4%.
 
-## Recomendación
+### Una regla simple le ganó a los modelos
 
-1. Fijar un margen mínimo en la fecha prometida: nunca prometer menos de 1.3 veces el tiempo reciente de la ruta. En el periodo de prueba, esto habría movido la fecha del 22% de los pedidos, 3.6 días en promedio, y 398 pedidos tardíos (23%) habrían llegado a tiempo. Una promesa más larga puede costar ventas, y estos datos solo incluyen compras concretadas, así que conviene lanzarlo como prueba A/B.
+Esperaba que un modelo de machine learning con más información superara a esa razón, así que entrené una regresión logística y un gradient boosting con 26 variables. No fue así. Si se marca el 10% de pedidos con la razón más ajustada, se detecta el 29.4% de todos los retrasos (IC 95%: 27.4–31.3%), unas tres veces lo que detectaría una selección al azar. Los dos modelos detectaron unos 3.5 puntos porcentuales menos, y la diferencia es estadísticamente significativa. Lo evalué en abril–agosto de 2018, un periodo que ningún modelo vio durante el desarrollo.
+
+El backtest mes por mes explicó por qué. Los tiempos de entrega de Olist cambiaron rápido en 2018 y los modelos envejecieron mal: el gradient boosting llegó a quedar por debajo del azar en agosto de 2018. La razón, en cambio, se recalcula con los últimos 90 días de cada ruta, se adapta sola y nunca bajó de 16.7%. Para este problema, la solución más simple también era la más estable.
+
+## Qué recomendaría
+
+1. Fijar un margen mínimo en la fecha prometida: nunca prometer menos de 1.3 veces el tiempo reciente de la ruta. En el periodo de prueba, esto habría movido la fecha del 22% de los pedidos, 3.6 días en promedio, y 398 pedidos tardíos (23%) habrían llegado a tiempo. Una promesa más larga puede costar ventas, y estos datos solo incluyen compras concretadas, así que lo lanzaría primero como prueba A/B.
 2. Dar al equipo de logística una alerta diaria con los pedidos cuya razón quede por debajo del percentil 10 de los últimos 30 días. En el periodo de prueba, la alerta marcó el 13% de los pedidos y detectó el 33% de los retrasos; el 13.5% de los pedidos marcados llegó tarde, 2.5 veces la tasa base. El umbral se ajusta solo, así que no hay que reentrenar nada.
 
 ## Dashboard
