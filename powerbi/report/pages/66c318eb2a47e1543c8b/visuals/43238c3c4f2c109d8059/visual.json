@@ -74,7 +74,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Estado del cliente'"
+                  "Value": "'Customer state'"
                 }
               }
             },

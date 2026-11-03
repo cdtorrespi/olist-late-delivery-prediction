@@ -23,12 +23,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "% a tiempo"
+                  "Property": "% on time"
                 }
               },
-              "queryRef": "fact_orders.% a tiempo",
-              "nativeQueryRef": "% a tiempo",
-              "displayName": "% a tiempo"
+              "queryRef": "fact_orders.% on time",
+              "nativeQueryRef": "% on time",
+              "displayName": "% on time"
             }
           ]
         }

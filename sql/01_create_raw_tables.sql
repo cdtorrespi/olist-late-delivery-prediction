@@ -1,9 +1,9 @@
 -- =====================================================================
 -- 01_create_raw_tables.sql
--- Crea el esquema "raw" con las 9 tablas originales de Olist, tal como
--- vienen en los CSV. No se transforma nada aquí: la limpieza ocurre en
--- 03_star_schema.sql.
--- Motor: PostgreSQL 16
+-- Creates the "raw" schema with Olist's 9 original tables, exactly as
+-- they come in the CSV files. Nothing is transformed here: cleaning
+-- happens in 03_star_schema.sql.
+-- Engine: PostgreSQL 16
 -- =====================================================================
 
 DROP SCHEMA IF EXISTS raw CASCADE;
@@ -12,7 +12,7 @@ CREATE SCHEMA raw;
 CREATE TABLE raw.customers (
     customer_id              TEXT PRIMARY KEY,
     customer_unique_id       TEXT NOT NULL,
-    customer_zip_code_prefix TEXT NOT NULL,   -- se guarda como texto para conservar ceros a la izquierda
+    customer_zip_code_prefix TEXT NOT NULL,   -- stored as text to keep leading zeros
     customer_city            TEXT,
     customer_state           CHAR(2)
 );
@@ -68,7 +68,7 @@ CREATE TABLE raw.order_reviews (
 CREATE TABLE raw.products (
     product_id                 TEXT PRIMARY KEY,
     product_category_name      TEXT,
-    product_name_lenght        INT,     -- el nombre original trae "lenght" mal escrito
+    product_name_lenght        INT,     -- the original column name misspells "lenght"
     product_description_lenght INT,
     product_photos_qty         INT,
     product_weight_g           INT,

@@ -23,12 +23,12 @@
                       "Entity": "risk_orders"
                     }
                   },
-                  "Property": "Pedidos marcados"
+                  "Property": "Orders flagged"
                 }
               },
-              "queryRef": "risk_orders.Pedidos marcados",
-              "nativeQueryRef": "Pedidos marcados",
-              "displayName": "Pedidos marcados"
+              "queryRef": "risk_orders.Orders flagged",
+              "nativeQueryRef": "Orders flagged",
+              "displayName": "Orders flagged"
             }
           ]
         }

@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Riesgo de retraso (abr-ago 2018)",
+                    "value": "Delay risk (Apr-Aug 2018)",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontSize": "20pt",
@@ -31,7 +31,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Alerta = colchón del plazo (días prometidos ÷ días que tardó la ruta en 90 días) bajo el percentil 10 de los 30 días previos",
+                    "value": "Alert = promise buffer (promised days ÷ days the route took over 90 days) below the 10th percentile of the previous 30 days",
                     "textStyle": {
                       "fontSize": "10pt",
                       "color": "#52514E"

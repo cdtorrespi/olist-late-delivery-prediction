@@ -23,12 +23,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Ingresos (GMV)"
+                  "Property": "Revenue (GMV)"
                 }
               },
-              "queryRef": "fact_orders.Ingresos (GMV)",
-              "nativeQueryRef": "Ingresos (GMV)",
-              "displayName": "Ingresos"
+              "queryRef": "fact_orders.Revenue (GMV)",
+              "nativeQueryRef": "Revenue (GMV)",
+              "displayName": "Revenue"
             }
           ]
         }

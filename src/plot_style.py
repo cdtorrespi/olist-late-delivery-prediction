@@ -1,11 +1,11 @@
-"""Estilo común de las gráficas: paleta sobria, rejilla tenue, marcas delgadas."""
+"""Shared chart style: restrained palette, faint grid, thin marks."""
 
 import matplotlib.pyplot as plt
 
-BLUE = "#2a78d6"     # serie principal
-ORANGE = "#eb6834"   # retrasos / alerta
-AQUA = "#1baf7a"     # comparación
-GRAY = "#a3a29d"     # referencia
+BLUE = "#2a78d6"     # main series
+ORANGE = "#eb6834"   # delays / alert
+AQUA = "#1baf7a"     # comparison
+GRAY = "#a3a29d"     # reference
 INK = "#0b0b0b"
 INK_2 = "#52514e"
 SURFACE = "#fcfcfb"

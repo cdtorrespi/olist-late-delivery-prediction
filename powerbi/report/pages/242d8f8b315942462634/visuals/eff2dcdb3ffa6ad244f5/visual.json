@@ -23,12 +23,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Pedidos"
+                  "Property": "Orders"
                 }
               },
-              "queryRef": "fact_orders.Pedidos",
-              "nativeQueryRef": "Pedidos",
-              "displayName": "Pedidos"
+              "queryRef": "fact_orders.Orders",
+              "nativeQueryRef": "Orders",
+              "displayName": "Orders"
             }
           ]
         }

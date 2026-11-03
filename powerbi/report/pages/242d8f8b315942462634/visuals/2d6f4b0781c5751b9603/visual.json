@@ -42,11 +42,11 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "% no a tiempo"
+                  "Property": "% not on time"
                 }
               },
-              "queryRef": "fact_orders.% no a tiempo",
-              "nativeQueryRef": "% no a tiempo"
+              "queryRef": "fact_orders.% not on time",
+              "nativeQueryRef": "% not on time"
             }
           ]
         }
@@ -87,7 +87,7 @@
             }
           },
           "selector": {
-            "metadata": "fact_orders.% no a tiempo"
+            "metadata": "fact_orders.% not on time"
           }
         }
       ],
@@ -294,7 +294,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'% de pedidos no a tiempo por mes'"
+                  "Value": "'% of orders not on time by month'"
                 }
               }
             },
@@ -346,7 +346,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Picos: Black Friday 2017 y feb-mar 2018'"
+                  "Value": "'Peaks: Black Friday 2017 and Feb-Mar 2018'"
                 }
               }
             },

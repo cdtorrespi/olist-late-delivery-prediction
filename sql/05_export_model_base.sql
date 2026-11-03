@@ -1,17 +1,17 @@
 -- =====================================================================
 -- 05_export_model_base.sql
--- Exporta desde el modelo dimensional las tablas que usan los notebooks
--- de Python y el dashboard de Power BI.
--- Uso (desde la raíz del repositorio):
+-- Exports from the dimensional model the tables used by the Python
+-- notebooks and the Power BI dashboard.
+-- Usage (from the repository root):
 --   psql -d olist -v out_dir="$PWD/data/processed" -f sql/05_export_model_base.sql
 -- =====================================================================
 
 \set ON_ERROR_STOP on
 
--- Base del modelo: un renglón por pedido con resultado de entrega conocido,
--- solo con información disponible AL MOMENTO DE LA COMPRA, más las columnas
--- de resultado (is_late, delivered_ts, review_score) que se usan como
--- objetivo o para evaluar, nunca como variables.
+-- Model base: one row per order with a known delivery outcome, holding
+-- only information available AT PURCHASE TIME, plus the outcome columns
+-- (is_late, delivered_ts, review_score) that are used as the target or
+-- for evaluation, never as features.
 CREATE OR REPLACE VIEW analytics.v_model_base AS
 WITH item_agg AS (
     SELECT
@@ -62,7 +62,7 @@ WHERE o.in_analysis_window
 \set c '\\copy (SELECT * FROM analytics.v_model_base ORDER BY purchase_ts) TO ' :'f' ' WITH (FORMAT csv, HEADER true)'
 :c
 
--- Tablas del modelo dimensional para Power BI
+-- Dimensional model tables for Power BI
 \set f :out_dir '/pbi_fact_orders.csv'
 \set c '\\copy (SELECT order_id, customer_id, main_seller_id AS seller_id, main_product_id AS product_id, order_status, delivery_status, is_late, purchase_date, estimated_date, delivered_ts::DATE AS delivered_date, promised_days, actual_days, days_vs_estimate, n_items, items_value, freight_value, gmv, max_distance_km, main_payment_type, review_score FROM analytics.fact_orders WHERE in_analysis_window ORDER BY purchase_date) TO ' :'f' ' WITH (FORMAT csv, HEADER true)'
 :c

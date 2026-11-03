@@ -23,12 +23,12 @@
                       "Entity": "risk_orders"
                     }
                   },
-                  "Property": "% retrasos capturados"
+                  "Property": "% late orders caught"
                 }
               },
-              "queryRef": "risk_orders.% retrasos capturados",
-              "nativeQueryRef": "% retrasos capturados",
-              "displayName": "% de retrasos capturados"
+              "queryRef": "risk_orders.% late orders caught",
+              "nativeQueryRef": "% late orders caught",
+              "displayName": "% of late orders caught"
             }
           ]
         }

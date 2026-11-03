@@ -28,7 +28,7 @@
               },
               "queryRef": "dim_seller.seller_id",
               "nativeQueryRef": "seller_id",
-              "displayName": "Vendedor"
+              "displayName": "Seller"
             },
             {
               "field": {
@@ -43,7 +43,7 @@
               },
               "queryRef": "dim_seller.state",
               "nativeQueryRef": "state",
-              "displayName": "Estado"
+              "displayName": "State"
             },
             {
               "field": {
@@ -53,12 +53,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Pedidos con resultado"
+                  "Property": "Orders with outcome"
                 }
               },
-              "queryRef": "fact_orders.Pedidos con resultado",
-              "nativeQueryRef": "Pedidos con resultado",
-              "displayName": "Pedidos"
+              "queryRef": "fact_orders.Orders with outcome",
+              "nativeQueryRef": "Orders with outcome",
+              "displayName": "Orders"
             },
             {
               "field": {
@@ -68,12 +68,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Pedidos no a tiempo"
+                  "Property": "Orders not on time"
                 }
               },
-              "queryRef": "fact_orders.Pedidos no a tiempo",
-              "nativeQueryRef": "Pedidos no a tiempo",
-              "displayName": "No a tiempo"
+              "queryRef": "fact_orders.Orders not on time",
+              "nativeQueryRef": "Orders not on time",
+              "displayName": "Not on time"
             },
             {
               "field": {
@@ -83,12 +83,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "% no a tiempo"
+                  "Property": "% not on time"
                 }
               },
-              "queryRef": "fact_orders.% no a tiempo",
-              "nativeQueryRef": "% no a tiempo",
-              "displayName": "% no a tiempo"
+              "queryRef": "fact_orders.% not on time",
+              "nativeQueryRef": "% not on time",
+              "displayName": "% not on time"
             },
             {
               "field": {
@@ -98,12 +98,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Calificación promedio"
+                  "Property": "Average rating"
                 }
               },
-              "queryRef": "fact_orders.Calificación promedio",
-              "nativeQueryRef": "Calificación promedio",
-              "displayName": "Calificación"
+              "queryRef": "fact_orders.Average rating",
+              "nativeQueryRef": "Average rating",
+              "displayName": "Rating"
             }
           ]
         }
@@ -118,7 +118,7 @@
                     "Entity": "fact_orders"
                   }
                 },
-                "Property": "Pedidos no a tiempo"
+                "Property": "Orders not on time"
               }
             },
             "direction": "Descending"
@@ -262,7 +262,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Vendedores con más pedidos no a tiempo'"
+                  "Value": "'Sellers with the most orders not on time'"
                 }
               }
             },

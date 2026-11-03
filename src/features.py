@@ -1,19 +1,19 @@
 """
-Construcción de variables para predecir, AL MOMENTO DE LA COMPRA, si un
-pedido no llegará a tiempo.
+Feature engineering to predict, AT PURCHASE TIME, whether an order will
+not arrive on time.
 
-Regla central contra la fuga de datos:
-    Una variable solo puede usar información que existía en el instante
-    de la compra (purchase_ts).
+Core rule against data leakage:
+    A feature may only use information that existed at the moment of
+    purchase (purchase_ts).
 
-Para las variables de historial (vendedor, ruta) eso exige saber CUÁNDO
-se conoció el resultado de cada pedido anterior:
-    * Pedido a tiempo  -> se supo al entregarse (delivered_ts).
-    * Pedido tardío    -> se supo al terminar el día prometido, es decir,
-                          a las 00:00 del día siguiente a estimated_date
-                          (aunque se haya entregado mucho después).
-Un pedido anterior entra al historial de otro solo si su resultado ya se
-conocía antes de la compra del segundo.
+For the history features (seller, route) this requires knowing WHEN the
+outcome of each earlier order became known:
+    * On-time order -> known when it was delivered (delivered_ts).
+    * Late order    -> known when the promised day ended, i.e. at 00:00
+                       on the day after estimated_date (even if it was
+                       delivered much later).
+An earlier order enters another order's history only if its outcome was
+already known before the second order was placed.
 """
 
 from __future__ import annotations
@@ -21,12 +21,12 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-# Prior bayesiano para suavizar tasas con pocos pedidos: equivale a
-# "PRIOR_STRENGTH pedidos imaginarios con la tasa global de retraso".
+# Bayesian prior to smooth rates with few orders: it is equivalent to
+# "PRIOR_STRENGTH imaginary orders at the overall late rate".
 PRIOR_STRENGTH = 20
-# Lo mismo para los días de entrega históricos (promedio suavizado).
+# Same idea for historical delivery days (smoothed mean).
 DAYS_PRIOR_STRENGTH = 10
-# Ventana para los días de entrega históricos (elegida en validación).
+# Window for historical delivery days (chosen on validation).
 HIST_WINDOW_DAYS = 90
 
 CATEGORICAL_FEATURES = [
@@ -36,10 +36,10 @@ CATEGORICAL_FEATURES = [
     "main_payment_type",
 ]
 
-# Variables descartadas a propósito (ver el README): el mes de compra,
-# el número absoluto de pedidos de la plataforma y los conteos absolutos del
-# vendedor. Las tres crecen o cambian con el tiempo, el modelo las usa para
-# memorizar la época del entrenamiento y empeoran la prueba fuera de periodo.
+# Features left out on purpose (see the README): purchase month, the
+# platform's absolute order count and the seller's absolute counts. All three
+# grow or shift over time, the model uses them to memorize the training
+# period, and they make the out-of-time test worse.
 NUMERIC_FEATURES = [
     "promised_days",
     "route_hist_days",
@@ -70,7 +70,7 @@ TARGET = "is_late"
 
 
 def load_model_base(path: str) -> pd.DataFrame:
-    """Lee la tabla exportada por sql/05_export_model_base.sql."""
+    """Read the table exported by sql/05_export_model_base.sql."""
     df = pd.read_csv(
         path,
         parse_dates=["purchase_ts", "estimated_date", "delivered_ts"],
@@ -80,7 +80,7 @@ def load_model_base(path: str) -> pd.DataFrame:
 
 
 def add_outcome_known_ts(df: pd.DataFrame) -> pd.DataFrame:
-    """Instante en que el resultado (a tiempo / tarde) de cada pedido se volvió conocido."""
+    """Moment when each order's outcome (on time / late) became known."""
     out = df.copy()
     end_of_promised_day = out["estimated_date"] + pd.Timedelta(days=1)
     out["outcome_known_ts"] = np.where(
@@ -94,12 +94,12 @@ def _history_rate(
     df: pd.DataFrame, key: str, global_rate: float, prefix: str
 ) -> pd.DataFrame:
     """
-    Para cada pedido, tasa de retraso histórica de su `key` (vendedor o ruta)
-    usando solo pedidos cuyo resultado se conocía antes de la compra.
+    For each order, the historical late rate of its `key` (seller or route)
+    using only orders whose outcome was known before the purchase.
 
-    Se resuelve con merge_asof: los "eventos" (resultados conocidos) se
-    acumulan por clave en el orden en que se conocieron, y cada pedido toma
-    el último acumulado estrictamente anterior a su purchase_ts.
+    Solved with merge_asof: the "events" (known outcomes) are accumulated
+    per key in the order they became known, and each order takes the last
+    running total strictly before its purchase_ts.
     """
     events = (
         df[[key, "outcome_known_ts", TARGET]]
@@ -117,7 +117,7 @@ def _history_rate(
         left_on="purchase_ts",
         right_on="outcome_known_ts",
         by=key,
-        allow_exact_matches=False,  # estrictamente antes de la compra
+        allow_exact_matches=False,  # strictly before the purchase
         direction="backward",
     )
     known = merged["cum_known"].fillna(0)
@@ -133,18 +133,18 @@ def _history_mean_days(
     df: pd.DataFrame, key: str, global_mean_days: float, window_days: int = HIST_WINDOW_DAYS
 ) -> pd.Series:
     """
-    Promedio de días de entrega (compra -> entrega) de cada `key` en los
-    últimos `window_days` días, usando solo pedidos YA ENTREGADOS antes de
-    la compra. Los pedidos sin entrega no aportan días porque su duración
-    real no se conoce.
+    Mean delivery days (purchase -> delivery) for each `key` over the last
+    `window_days` days, using only orders ALREADY DELIVERED before the
+    purchase. Undelivered orders contribute no days because their actual
+    duration is unknown.
 
-    Se usa una ventana reciente (no todo el historial) porque los tiempos de
-    entrega cambiaron mucho en 2018: con el promedio acumulado, una ruta que
-    se volvió más rápida seguiría pareciendo lenta. La ventana de 90 días se
-    eligió en el periodo de validación (ver notebooks/03_model.ipynb).
+    A recent window is used (not the full history) because delivery times
+    changed a lot in 2018: with an all-time average, a route that got faster
+    would still look slow. The 90-day window was chosen on the validation
+    period (see notebooks/03_model.ipynb).
 
-    Implementación: sumas acumuladas por clave, consultadas en t (compra) y
-    en t - ventana; la resta da los pedidos entregados dentro de la ventana.
+    Implementation: running sums per key, looked up at t (purchase) and at
+    t - window; the difference gives the orders delivered within the window.
     """
     events = (
         df.loc[df["delivered_ts"].notna(), [key, "delivered_ts", "actual_days"]]
@@ -156,13 +156,13 @@ def _history_mean_days(
     cols = [key, "delivered_ts", "cum_n", "cum_days"]
 
     queries = df[["order_id", key, "purchase_ts"]]
-    # Acumulado de entregas estrictamente antes de la compra
+    # Running total of deliveries strictly before the purchase
     upto_now = pd.merge_asof(
         queries.sort_values("purchase_ts"), events[cols],
         left_on="purchase_ts", right_on="delivered_ts", by=key,
         allow_exact_matches=False, direction="backward",
     ).set_index("order_id")
-    # Acumulado de entregas hasta el inicio de la ventana (se resta)
+    # Running total of deliveries up to the window start (subtracted)
     window_start = queries.assign(window_start=queries["purchase_ts"] - pd.Timedelta(days=window_days))
     upto_start = pd.merge_asof(
         window_start.sort_values("window_start"), events[cols],
@@ -177,7 +177,7 @@ def _history_mean_days(
 
 
 def _rolling_count_before(times: pd.Series, window: str) -> np.ndarray:
-    """Cuántos eventos ocurrieron en la ventana [t - window, t) para cada t (times ordenados)."""
+    """How many events fell in the window [t - window, t) for each t (times must be sorted)."""
     t = times.values.astype("datetime64[ns]")
     start = t - pd.Timedelta(window).to_timedelta64()
     return np.searchsorted(t, t, side="left") - np.searchsorted(t, start, side="left")
@@ -185,12 +185,12 @@ def _rolling_count_before(times: pd.Series, window: str) -> np.ndarray:
 
 def build_features(df: pd.DataFrame, cutoff: pd.Timestamp) -> pd.DataFrame:
     """
-    Devuelve el DataFrame con todas las variables del modelo.
+    Return the DataFrame with every model feature.
 
-    `cutoff` es el inicio del periodo que se va a evaluar. Los priors de
-    suavizado (tasa global de retraso y días promedio de entrega) se calculan
-    solo con información conocida antes de esa fecha, para no filtrar nada
-    del periodo de evaluación.
+    `cutoff` is the start of the period to be evaluated. The smoothing priors
+    (overall late rate and mean delivery days) are computed only from
+    information known before that date, so nothing leaks from the
+    evaluation period.
     """
     out = add_outcome_known_ts(df)
     out["actual_days"] = (
@@ -200,18 +200,18 @@ def build_features(df: pd.DataFrame, cutoff: pd.Timestamp) -> pd.DataFrame:
     global_rate = out.loc[known_before, TARGET].mean()
     global_mean_days = out.loc[out["delivered_ts"] < cutoff, "actual_days"].mean()
 
-    # --- Variables directas del pedido -------------------------------
+    # --- Direct order features ---------------------------------------
     out["same_state"] = (out["customer_state"] == out["seller_state"]).astype(int)
     out["freight_share"] = out["freight_value"] / (out["items_value"] + out["freight_value"])
     out["purchase_month"] = out["purchase_ts"].dt.month
     out["purchase_weekday"] = out["purchase_ts"].dt.weekday
     out["purchase_hour"] = out["purchase_ts"].dt.hour
 
-    # --- Historial del vendedor principal ----------------------------
+    # --- Main seller history -----------------------------------------
     seller_hist = _history_rate(out, "main_seller_id", global_rate, "seller")
     out = out.merge(seller_hist, on="order_id", how="left")
 
-    # Volumen reciente del vendedor (compras de sus pedidos en los 30 días previos)
+    # Recent seller volume (orders placed with the seller in the previous 30 days)
     out = out.sort_values(["main_seller_id", "purchase_ts"])
     out["seller_orders_last_30d"] = (
         out.groupby("main_seller_id", group_keys=False)["purchase_ts"]
@@ -219,21 +219,21 @@ def build_features(df: pd.DataFrame, cutoff: pd.Timestamp) -> pd.DataFrame:
     )
     out = out.sort_values("purchase_ts").reset_index(drop=True)
 
-    # --- Historial de la ruta estado vendedor -> estado cliente -------
+    # --- Route history: seller state -> customer state ---------------
     out["route"] = out["seller_state"].fillna("NA") + "->" + out["customer_state"].fillna("NA")
     route_hist = _history_rate(out, "route", global_rate, "route")
     out = out.merge(route_hist.drop(columns="route_known_orders"), on="order_id", how="left")
 
-    # --- Colchón del plazo prometido ---------------------------------
-    # ¿Cuántos días promete Olist contra lo que históricamente tarda la ruta
-    # (o el vendedor)? Un colchón corto es la señal de riesgo más fuerte.
+    # --- Buffer in the promised delivery time ------------------------
+    # How many days does Olist promise versus how long the route (or the
+    # seller) has historically taken? A short buffer is the strongest risk signal.
     out["route_hist_days"] = _history_mean_days(out, "route", global_mean_days)
     out["seller_hist_days"] = _history_mean_days(out, "main_seller_id", global_mean_days)
     out["promise_buffer_route"] = out["promised_days"] - out["route_hist_days"]
     out["promise_buffer_seller"] = out["promised_days"] - out["seller_hist_days"]
     out["promise_ratio"] = out["promised_days"] / out["route_hist_days"]
 
-    # --- Carga de la plataforma (picos como Black Friday) ------------
+    # --- Platform load (peaks such as Black Friday) -------------------
     out["platform_orders_last_7d"] = _rolling_count_before(out["purchase_ts"], "7D")
     orders_last_28d = _rolling_count_before(out["purchase_ts"], "28D")
     out["platform_load_ratio"] = out["platform_orders_last_7d"] / np.maximum(orders_last_28d / 4, 1)

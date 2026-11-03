@@ -28,7 +28,7 @@
               },
               "queryRef": "risk_orders.order_id",
               "nativeQueryRef": "order_id",
-              "displayName": "Pedido"
+              "displayName": "Order"
             },
             {
               "field": {
@@ -43,7 +43,7 @@
               },
               "queryRef": "risk_orders.purchase_date",
               "nativeQueryRef": "purchase_date",
-              "displayName": "Compra"
+              "displayName": "Purchase"
             },
             {
               "field": {
@@ -58,7 +58,7 @@
               },
               "queryRef": "risk_orders.route",
               "nativeQueryRef": "route",
-              "displayName": "Ruta"
+              "displayName": "Route"
             },
             {
               "field": {
@@ -73,7 +73,7 @@
               },
               "queryRef": "risk_orders.promised_days",
               "nativeQueryRef": "promised_days",
-              "displayName": "Días prometidos"
+              "displayName": "Promised days"
             },
             {
               "field": {
@@ -88,7 +88,7 @@
               },
               "queryRef": "risk_orders.route_hist_days",
               "nativeQueryRef": "route_hist_days",
-              "displayName": "Días ruta (90 d)"
+              "displayName": "Route days (90 d)"
             },
             {
               "field": {
@@ -103,7 +103,7 @@
               },
               "queryRef": "risk_orders.promise_ratio",
               "nativeQueryRef": "promise_ratio",
-              "displayName": "Colchón"
+              "displayName": "Buffer"
             },
             {
               "field": {
@@ -118,7 +118,7 @@
               },
               "queryRef": "risk_orders.late_probability",
               "nativeQueryRef": "late_probability",
-              "displayName": "Prob. retraso"
+              "displayName": "Late prob."
             },
             {
               "field": {
@@ -133,7 +133,7 @@
               },
               "queryRef": "risk_orders.flag_high_risk",
               "nativeQueryRef": "flag_high_risk",
-              "displayName": "Alerta"
+              "displayName": "Alert"
             },
             {
               "field": {
@@ -148,7 +148,7 @@
               },
               "queryRef": "risk_orders.delivery_status_label",
               "nativeQueryRef": "delivery_status_label",
-              "displayName": "Resultado"
+              "displayName": "Outcome"
             }
           ]
         }
@@ -307,7 +307,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Pedidos ordenados por riesgo (colchón más corto primero)'"
+                  "Value": "'Orders ranked by risk (shortest buffer first)'"
                 }
               }
             },

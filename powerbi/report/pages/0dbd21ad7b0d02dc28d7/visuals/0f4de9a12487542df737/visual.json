@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Logística",
+                    "value": "Logistics",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontSize": "20pt",
@@ -31,7 +31,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Dónde y con quién se concentran los retrasos",
+                    "value": "Where and with whom delays are concentrated",
                     "textStyle": {
                       "fontSize": "10pt",
                       "color": "#52514E"

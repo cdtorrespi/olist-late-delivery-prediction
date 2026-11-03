@@ -74,7 +74,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Estado del vendedor'"
+                  "Value": "'Seller state'"
                 }
               }
             },

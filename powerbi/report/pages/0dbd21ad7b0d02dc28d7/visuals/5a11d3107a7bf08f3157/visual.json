@@ -42,11 +42,11 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "% no a tiempo"
+                  "Property": "% not on time"
                 }
               },
-              "queryRef": "fact_orders.% no a tiempo",
-              "nativeQueryRef": "% no a tiempo"
+              "queryRef": "fact_orders.% not on time",
+              "nativeQueryRef": "% not on time"
             }
           ]
         }
@@ -61,7 +61,7 @@
                     "Entity": "fact_orders"
                   }
                 },
-                "Property": "% no a tiempo"
+                "Property": "% not on time"
               }
             },
             "direction": "Descending"
@@ -302,7 +302,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'% de pedidos no a tiempo por estado del cliente'"
+                  "Value": "'% of orders not on time by customer state'"
                 }
               }
             },

@@ -1,22 +1,22 @@
 -- =====================================================================
 -- 03_star_schema.sql
--- Construye el modelo dimensional en el esquema "analytics":
+-- Builds the dimensional model in the "analytics" schema:
 --   dim_customer, dim_seller, dim_product, dim_date, dim_geo_zip
---   fact_order_items (grano: artículo de un pedido)
---   fact_orders      (grano: pedido)  <- tabla central del análisis
+--   fact_order_items (grain: one item of an order)
+--   fact_orders      (grain: order)  <- central table of the analysis
 --
--- Decisiones clave (ver "Decisiones de diseño" en el README):
---   * La fecha estimada de entrega no tiene hora (siempre 00:00), así que
---     un pedido es "tarde" cuando el DÍA de entrega es posterior al día
---     estimado. Entregar el mismo día estimado cuenta como a tiempo.
---   * Los pedidos con estado "shipped" que nunca registraron entrega ya
---     habían pasado su fecha estimada al corte de los datos: se marcan como
---     'not_delivered' y cuentan como "no entregados a tiempo".
---   * Los prefijos postales de clientes y vendedores perdieron sus ceros a
---     la izquierda en los CSV (p. ej. "1151" en lugar de "01151"); se
---     normalizan a 5 dígitos con LPAD para poder cruzarlos con geolocalización.
---   * Ventana de análisis: compras de 2017-01-01 a 2018-08-31. Los meses
---     anteriores y posteriores tienen muy pocos pedidos.
+-- Key decisions (see "Design decisions" in the README):
+--   * The estimated delivery date has no time (always 00:00), so an order
+--     is "late" when the delivery DAY is after the estimated day.
+--     Delivering on the estimated day counts as on time.
+--   * Orders with status "shipped" that never recorded a delivery were
+--     already past their estimated date when the data ends: they are
+--     flagged 'not_delivered' and count as "not delivered on time".
+--   * Customer and seller zip prefixes lost their leading zeros in the CSV
+--     files (e.g. "1151" instead of "01151"); they are padded to 5 digits
+--     with LPAD so they can be joined to the geolocation table.
+--   * Analysis window: purchases from 2017-01-01 to 2018-08-31. The months
+--     before and after have very few orders.
 -- =====================================================================
 
 \set ON_ERROR_STOP on
@@ -25,8 +25,8 @@ DROP SCHEMA IF EXISTS analytics CASCADE;
 CREATE SCHEMA analytics;
 
 -- ---------------------------------------------------------------------
--- Geolocalización: un punto (promedio) por prefijo de código postal.
--- Se descartan coordenadas fuera de los límites de Brasil.
+-- Geolocation: one (average) point per zip code prefix.
+-- Coordinates outside Brazil's bounds are dropped.
 -- ---------------------------------------------------------------------
 CREATE TABLE analytics.dim_geo_zip AS
 SELECT
@@ -41,7 +41,7 @@ GROUP BY geolocation_zip_code_prefix;
 
 ALTER TABLE analytics.dim_geo_zip ADD PRIMARY KEY (zip_prefix);
 
--- Distancia en km entre dos coordenadas (fórmula de Haversine)
+-- Distance in km between two coordinates (Haversine formula)
 CREATE OR REPLACE FUNCTION analytics.haversine_km(
     lat1 DOUBLE PRECISION, lng1 DOUBLE PRECISION,
     lat2 DOUBLE PRECISION, lng2 DOUBLE PRECISION)
@@ -54,7 +54,7 @@ LANGUAGE sql IMMUTABLE AS $$
 $$;
 
 -- ---------------------------------------------------------------------
--- Dimensiones
+-- Dimensions
 -- ---------------------------------------------------------------------
 CREATE TABLE analytics.dim_customer AS
 SELECT
@@ -95,7 +95,7 @@ LEFT JOIN raw.category_translation t USING (product_category_name);
 
 ALTER TABLE analytics.dim_product ADD PRIMARY KEY (product_id);
 
--- Calendario continuo que cubre todo el rango de los datos
+-- Continuous calendar covering the full date range of the data
 CREATE TABLE analytics.dim_date AS
 SELECT
     d::DATE                          AS date,
@@ -103,14 +103,14 @@ SELECT
     EXTRACT(QUARTER FROM d)::INT     AS quarter,
     EXTRACT(MONTH FROM d)::INT       AS month,
     TO_CHAR(d, 'YYYY-MM')            AS year_month,
-    EXTRACT(ISODOW FROM d)::INT      AS iso_weekday,   -- 1 = lunes
+    EXTRACT(ISODOW FROM d)::INT      AS iso_weekday,   -- 1 = Monday
     (EXTRACT(ISODOW FROM d) >= 6)    AS is_weekend
 FROM GENERATE_SERIES(DATE '2016-09-01', DATE '2018-12-31', INTERVAL '1 day') AS d;
 
 ALTER TABLE analytics.dim_date ADD PRIMARY KEY (date);
 
 -- ---------------------------------------------------------------------
--- Hechos a nivel artículo
+-- Item-level facts
 -- ---------------------------------------------------------------------
 CREATE TABLE analytics.fact_order_items AS
 SELECT
@@ -129,7 +129,7 @@ JOIN analytics.dim_seller s    ON s.seller_id = i.seller_id;
 ALTER TABLE analytics.fact_order_items ADD PRIMARY KEY (order_id, order_item_id);
 
 -- ---------------------------------------------------------------------
--- Hechos a nivel pedido
+-- Order-level facts
 -- ---------------------------------------------------------------------
 CREATE TABLE analytics.fact_orders AS
 WITH
@@ -144,7 +144,7 @@ items AS (
     FROM analytics.fact_order_items
     GROUP BY order_id
 ),
--- Vendedor principal: el del artículo de mayor precio (desempate: menor order_item_id)
+-- Main seller: the seller of the most expensive item (tie-break: lowest order_item_id)
 main_seller AS (
     SELECT order_id, seller_id, product_id
     FROM (
@@ -159,12 +159,12 @@ payments AS (
         order_id,
         SUM(payment_value)                                   AS payment_value,
         MAX(payment_installments)                            AS max_installments,
-        -- Medio de pago principal: el de mayor monto
+        -- Main payment type: the one with the largest amount
         (ARRAY_AGG(payment_type ORDER BY payment_value DESC))[1] AS main_payment_type
     FROM raw.order_payments
     GROUP BY order_id
 ),
--- Algunos pedidos tienen más de una reseña: se toma la más reciente
+-- Some orders have more than one review: the most recent one is used
 reviews AS (
     SELECT order_id, review_score
     FROM (
@@ -188,11 +188,11 @@ SELECT
     o.order_purchase_timestamp::DATE               AS purchase_date,
     o.order_delivered_customer_date                AS delivered_ts,
     o.order_estimated_delivery_date::DATE          AS estimated_date,
-    -- Plazo prometido al cliente (días naturales desde la compra)
+    -- Delivery time promised to the customer (calendar days from purchase)
     (o.order_estimated_delivery_date::DATE - o.order_purchase_timestamp::DATE) AS promised_days,
-    -- Plazo real
+    -- Actual delivery time
     (o.order_delivered_customer_date::DATE - o.order_purchase_timestamp::DATE) AS actual_days,
-    -- Días de retraso (negativo = llegó antes de lo prometido)
+    -- Days late (negative = arrived before the promised date)
     (o.order_delivered_customer_date::DATE - o.order_estimated_delivery_date::DATE) AS days_vs_estimate,
     CASE
         WHEN o.order_status = 'delivered' AND o.order_delivered_customer_date IS NOT NULL
@@ -226,26 +226,26 @@ CREATE INDEX ON analytics.fact_orders (purchase_date);
 CREATE INDEX ON analytics.fact_orders (main_seller_id);
 CREATE INDEX ON analytics.fact_orders (customer_id);
 
--- Bandera de "no entregado a tiempo": objetivo del modelo
+-- "Not delivered on time" flag: the model target
 ALTER TABLE analytics.fact_orders ADD COLUMN is_late SMALLINT;
 UPDATE analytics.fact_orders
 SET is_late = CASE WHEN delivery_status IN ('late', 'not_delivered') THEN 1
                    WHEN delivery_status = 'on_time'                  THEN 0 END;
 
 -- ---------------------------------------------------------------------
--- Controles de integridad
+-- Integrity checks
 -- ---------------------------------------------------------------------
-SELECT 'pedidos'                    AS control, COUNT(*)::TEXT AS valor FROM analytics.fact_orders
-UNION ALL SELECT 'pedidos sin artículos',      COUNT(*)::TEXT FROM analytics.fact_orders WHERE n_items IS NULL
-UNION ALL SELECT 'clientes sin coordenadas',   COUNT(*)::TEXT FROM analytics.dim_customer WHERE lat IS NULL
-UNION ALL SELECT 'vendedores sin coordenadas', COUNT(*)::TEXT FROM analytics.dim_seller WHERE lat IS NULL
-UNION ALL SELECT 'artículos huérfanos (sin pedido)',
+SELECT 'orders'                       AS check_name, COUNT(*)::TEXT AS value FROM analytics.fact_orders
+UNION ALL SELECT 'orders without items',         COUNT(*)::TEXT FROM analytics.fact_orders WHERE n_items IS NULL
+UNION ALL SELECT 'customers without coordinates', COUNT(*)::TEXT FROM analytics.dim_customer WHERE lat IS NULL
+UNION ALL SELECT 'sellers without coordinates',   COUNT(*)::TEXT FROM analytics.dim_seller WHERE lat IS NULL
+UNION ALL SELECT 'orphan items (no order)',
           COUNT(*)::TEXT FROM raw.order_items i WHERE NOT EXISTS (SELECT 1 FROM raw.orders o WHERE o.order_id = i.order_id)
-UNION ALL SELECT 'diferencia pagos vs GMV > 1 BRL (pedidos)',
+UNION ALL SELECT 'payments vs GMV difference > 1 BRL (orders)',
           COUNT(*)::TEXT FROM analytics.fact_orders WHERE ABS(payment_value - gmv) > 1;
 
-SELECT delivery_status, COUNT(*) AS pedidos
+SELECT delivery_status, COUNT(*) AS orders
 FROM analytics.fact_orders
 WHERE in_analysis_window
 GROUP BY delivery_status
-ORDER BY pedidos DESC;
+ORDER BY orders DESC;

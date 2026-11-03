@@ -42,11 +42,11 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Ingresos (GMV)"
+                  "Property": "Revenue (GMV)"
                 }
               },
-              "queryRef": "fact_orders.Ingresos (GMV)",
-              "nativeQueryRef": "Ingresos (GMV)"
+              "queryRef": "fact_orders.Revenue (GMV)",
+              "nativeQueryRef": "Revenue (GMV)"
             }
           ]
         }
@@ -271,7 +271,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Ingresos por mes (R$)'"
+                  "Value": "'Revenue by month (R$)'"
                 }
               }
             },

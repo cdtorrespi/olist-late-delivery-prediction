@@ -23,12 +23,12 @@
                       "Entity": "risk_orders"
                     }
                   },
-                  "Property": "Precisión de la alerta"
+                  "Property": "Alert precision"
                 }
               },
-              "queryRef": "risk_orders.Precisión de la alerta",
-              "nativeQueryRef": "Precisión de la alerta",
-              "displayName": "Precisión de la alerta"
+              "queryRef": "risk_orders.Alert precision",
+              "nativeQueryRef": "Alert precision",
+              "displayName": "Alert precision"
             }
           ]
         }

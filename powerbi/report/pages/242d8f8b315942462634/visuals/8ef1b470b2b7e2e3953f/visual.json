@@ -23,12 +23,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Calificación promedio"
+                  "Property": "Average rating"
                 }
               },
-              "queryRef": "fact_orders.Calificación promedio",
-              "nativeQueryRef": "Calificación promedio",
-              "displayName": "Calificación"
+              "queryRef": "fact_orders.Average rating",
+              "nativeQueryRef": "Average rating",
+              "displayName": "Rating"
             }
           ]
         }

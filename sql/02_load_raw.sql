@@ -1,7 +1,7 @@
 -- =====================================================================
 -- 02_load_raw.sql
--- Carga los 9 CSV al esquema "raw".
--- Uso (desde la raíz del repositorio):
+-- Loads the 9 CSV files into the "raw" schema.
+-- Usage (from the repository root):
 --   psql -d olist -v data_dir="$PWD/data/raw" -f sql/02_load_raw.sql
 -- =====================================================================
 
@@ -34,8 +34,8 @@ COPY raw.sellers FROM :'f' WITH (FORMAT csv, HEADER true);
 \set f :data_dir '/product_category_name_translation.csv'
 COPY raw.category_translation FROM :'f' WITH (FORMAT csv, HEADER true);
 
--- Verificación rápida de conteos
-SELECT 'customers' AS tabla, COUNT(*) AS filas FROM raw.customers
+-- Quick row-count check
+SELECT 'customers' AS table_name, COUNT(*) AS row_count FROM raw.customers
 UNION ALL SELECT 'geolocation', COUNT(*) FROM raw.geolocation
 UNION ALL SELECT 'orders', COUNT(*) FROM raw.orders
 UNION ALL SELECT 'order_items', COUNT(*) FROM raw.order_items

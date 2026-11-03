@@ -42,11 +42,11 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Calificación promedio"
+                  "Property": "Average rating"
                 }
               },
-              "queryRef": "fact_orders.Calificación promedio",
-              "nativeQueryRef": "Calificación promedio"
+              "queryRef": "fact_orders.Average rating",
+              "nativeQueryRef": "Average rating"
             }
           ]
         }
@@ -61,7 +61,7 @@
                     "Entity": "fact_orders"
                   }
                 },
-                "Property": "Calificación promedio"
+                "Property": "Average rating"
               }
             },
             "direction": "Descending"
@@ -302,7 +302,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Calificación según la entrega'"
+                  "Value": "'Rating by delivery outcome'"
                 }
               }
             },

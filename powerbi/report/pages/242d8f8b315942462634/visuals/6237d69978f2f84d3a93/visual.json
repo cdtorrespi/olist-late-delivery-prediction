@@ -19,7 +19,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Resumen ejecutivo",
+                    "value": "Executive summary",
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontSize": "20pt",
@@ -31,7 +31,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "Olist · compras de enero 2017 a agosto 2018",
+                    "value": "Olist · purchases from January 2017 to August 2018",
                     "textStyle": {
                       "fontSize": "10pt",
                       "color": "#52514E"

@@ -1,40 +1,40 @@
-# Validación de las medidas DAX
+# DAX measure validation
 
-Ejecuté cada medida del modelo con una consulta DAX y comparé el resultado con la misma cifra calculada en PostgreSQL sobre `analytics.fact_orders`, filtrada a `in_analysis_window`. Las medidas de riesgo las comparé con `data/processed/test_predictions.csv`. Las 26 coinciden.
+I ran every measure in the model with a DAX query and compared the result with the same figure computed in PostgreSQL on `analytics.fact_orders`, filtered to `in_analysis_window`. The risk measures I compared with `data/processed/test_predictions.csv`. All 26 match.
 
-| Medida | Power BI | Referencia (SQL o Python) | ¿Coincide? |
+| Measure | Power BI | Reference (SQL or Python) | Match? |
 |---|---:|---:|:---:|
-| Pedidos | 99,092 | 99,092 | Sí |
-| Ingresos (GMV) | R$ 15,688,396.64 | R$ 15,688,396.64 | Sí |
-| Ticket promedio | R$ 160.24 | R$ 160.24 | Sí |
-| Ingresos (GMV), marzo de 2018 | R$ 1,152,785.45 | R$ 1,152,785.45 | Sí |
-| Ingresos mes anterior, marzo de 2018 | R$ 980,154.60 | R$ 980,154.60 | Sí |
-| Crecimiento mensual %, marzo de 2018 | 17.6% | 17.6% | Sí |
-| Pedidos con resultado | 97,300 | 97,300 | Sí |
-| Pedidos no a tiempo | 7,628 | 7,628 | Sí |
-| % a tiempo | 92.16% | 92.16% | Sí |
-| % no a tiempo | 7.84% | 7.84% | Sí |
-| % a tiempo, clientes de RJ | 85.85% | 85.85% | Sí |
-| Días prometidos (prom.) | 24.30 | 24.30 | Sí |
-| Días reales (prom.) | 12.48 | 12.48 | Sí |
-| Días de retraso (prom. tardíos) | 10.62 | 10.62 | Sí |
-| Colchón promedio (días) | 11.82 | 24.30 − 12.48 | Sí |
-| Calificación promedio | 4.089 | 4.089 | Sí |
-| Reseñas | 98,330 | 98,330 | Sí |
-| Reseñas negativas | 14,382 | 14,382 | Sí |
-| % reseñas negativas | 14.63% | 14.63% | Sí |
-| Reseñas negativas por retraso | 4,008 | 4,008 | Sí, tras la corrección |
-| Pedidos evaluados | 32,453 | 32,453 | Sí |
-| Pedidos marcados | 4,219 | 4,219 | Sí |
-| % pedidos marcados | 13.0% | 13.0% | Sí |
-| % retrasos capturados | 32.9% | 32.9% | Sí |
-| Precisión de la alerta | 13.5% | 13.5% | Sí |
-| Tasa de retraso (prueba) | 5.3% | 5.3% | Sí |
-| Probabilidad promedio | 8.7% | 8.7% | Sí |
-| Colchón promedio (ratio) | 1.87x | 1.87x | Sí |
+| Orders | 99,092 | 99,092 | Yes |
+| Revenue (GMV) | R$ 15,688,396.64 | R$ 15,688,396.64 | Yes |
+| Average order value | R$ 160.24 | R$ 160.24 | Yes |
+| Revenue (GMV), March 2018 | R$ 1,152,785.45 | R$ 1,152,785.45 | Yes |
+| Revenue previous month, March 2018 | R$ 980,154.60 | R$ 980,154.60 | Yes |
+| Monthly growth %, March 2018 | 17.6% | 17.6% | Yes |
+| Orders with outcome | 97,300 | 97,300 | Yes |
+| Orders not on time | 7,628 | 7,628 | Yes |
+| % on time | 92.16% | 92.16% | Yes |
+| % not on time | 7.84% | 7.84% | Yes |
+| % on time, RJ customers | 85.85% | 85.85% | Yes |
+| Promised days (avg) | 24.30 | 24.30 | Yes |
+| Actual days (avg) | 12.48 | 12.48 | Yes |
+| Days late (avg, late orders) | 10.62 | 10.62 | Yes |
+| Average buffer (days) | 11.82 | 24.30 − 12.48 | Yes |
+| Average rating | 4.089 | 4.089 | Yes |
+| Reviews | 98,330 | 98,330 | Yes |
+| Negative reviews | 14,382 | 14,382 | Yes |
+| % negative reviews | 14.63% | 14.63% | Yes |
+| Negative reviews from delays | 4,008 | 4,008 | Yes, after the fix |
+| Orders evaluated | 32,453 | 32,453 | Yes |
+| Orders flagged | 4,219 | 4,219 | Yes |
+| % orders flagged | 13.0% | 13.0% | Yes |
+| % late orders caught | 32.9% | 32.9% | Yes |
+| Alert precision | 13.5% | 13.5% | Yes |
+| Late rate (test) | 5.3% | 5.3% | Yes |
+| Average probability | 8.7% | 8.7% | Yes |
+| Average buffer (ratio) | 1.87x | 1.87x | Yes |
 
-## Un error que encontré
+## A bug I found
 
-La primera versión de "Reseñas negativas por retraso" daba 3,903 en lugar de 4,008. La medida tomaba los pedidos a tiempo con el filtro `fact_orders[is_late] = 0`, pero en DAX un valor en blanco se considera igual a 0. Así, el filtro también incluía los 1,746 pedidos cancelados o en proceso, que tienen 83% de reseñas negativas, y la tasa de referencia subía de 9.2% a 10.7%.
+The first version of "Negative reviews from delays" returned 3,903 instead of 4,008. The measure picked on-time orders with the filter `fact_orders[is_late] = 0`, but in DAX a blank value is treated as equal to 0. So the filter also included the 1,746 canceled or in-progress orders, which have 83% negative reviews, and the reference rate rose from 9.2% to 10.7%.
 
-Lo corregí filtrando por `fact_orders[delivery_status] = "on_time"`.
+I fixed it by filtering on `fact_orders[delivery_status] = "on_time"`.

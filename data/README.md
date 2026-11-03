@@ -1,21 +1,21 @@
-# Datos
+# Data
 
-Los datos crudos son el Brazilian E-Commerce Public Dataset by Olist (unos 100 mil pedidos hechos entre 2016 y 2018). No se guardan en este repositorio.
+The raw data is the Brazilian E-Commerce Public Dataset by Olist (about 100k orders placed between 2016 and 2018). It is not stored in this repository.
 
-## Descarga
+## Download
 
-Opción A, Kaggle: descargar el dataset de <https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce> y descomprimir los 9 CSV en `data/raw/`.
+Option A, Kaggle: download the dataset from <https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce> and unzip the 9 CSV files into `data/raw/`.
 
-Opción B, GitHub (no requiere cuenta), desde la raíz del repositorio:
+Option B, GitHub (no account needed), from the repository root:
 
 ```bash
 git clone --depth 1 https://github.com/olist/work-at-olist-data.git /tmp/olist
 cp /tmp/olist/datasets/*.csv data/raw/
 ```
 
-Las dos fuentes tienen los mismos 9 archivos:
+Both sources contain the same 9 files:
 
-| Archivo | Filas |
+| File | Rows |
 |---|---:|
 | olist_orders_dataset.csv | 99,441 |
 | olist_order_items_dataset.csv | 112,650 |
@@ -27,6 +27,6 @@ Las dos fuentes tienen los mismos 9 archivos:
 | olist_geolocation_dataset.csv | 1,000,163 |
 | product_category_name_translation.csv | 71 |
 
-## Datos generados
+## Generated data
 
-`data/processed/` se llena al correr los notebooks (variables del modelo, predicciones del periodo de prueba y las tablas que importa Power BI). Git lo ignora porque todos sus archivos se pueden reconstruir a partir de los datos crudos.
+`data/processed/` is filled in when the notebooks run (model features, test-period predictions and the tables Power BI imports). Git ignores it because every file in it can be rebuilt from the raw data.

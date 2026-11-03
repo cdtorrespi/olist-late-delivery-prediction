@@ -42,12 +42,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Días prometidos (prom.)"
+                  "Property": "Promised days (avg)"
                 }
               },
-              "queryRef": "fact_orders.Días prometidos (prom.)",
-              "nativeQueryRef": "Días prometidos (prom.)",
-              "displayName": "Días prometidos"
+              "queryRef": "fact_orders.Promised days (avg)",
+              "nativeQueryRef": "Promised days (avg)",
+              "displayName": "Promised days"
             },
             {
               "field": {
@@ -57,12 +57,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Días reales (prom.)"
+                  "Property": "Actual days (avg)"
                 }
               },
-              "queryRef": "fact_orders.Días reales (prom.)",
-              "nativeQueryRef": "Días reales (prom.)",
-              "displayName": "Días reales"
+              "queryRef": "fact_orders.Actual days (avg)",
+              "nativeQueryRef": "Actual days (avg)",
+              "displayName": "Actual days"
             }
           ]
         }
@@ -103,7 +103,7 @@
             }
           },
           "selector": {
-            "metadata": "fact_orders.Días prometidos (prom.)"
+            "metadata": "fact_orders.Promised days (avg)"
           }
         },
         {
@@ -121,7 +121,7 @@
             }
           },
           "selector": {
-            "metadata": "fact_orders.Días reales (prom.)"
+            "metadata": "fact_orders.Actual days (avg)"
           }
         }
       ],
@@ -335,7 +335,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Plazo prometido vs. real (días)'"
+                  "Value": "'Promised vs. actual delivery time (days)'"
                 }
               }
             },

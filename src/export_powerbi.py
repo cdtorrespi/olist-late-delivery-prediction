@@ -1,11 +1,11 @@
 """
-Prepara las tablas que importa Power BI: el modelo dimensional y el riesgo de cada pedido del periodo de prueba.
+Prepares the tables Power BI imports: the dimensional model and the risk of each test-period order.
 
-Entrada: los CSV que generan sql/05_export_model_base.sql y
-notebooks/03_model.ipynb en data/processed/.
-Salida:  data/processed/powerbi/*.csv
+Input:  the CSV files that sql/05_export_model_base.sql and
+notebooks/03_model.ipynb write to data/processed/.
+Output: data/processed/powerbi/*.csv
 
-Uso (desde la raíz del repositorio):
+Usage (from the repository root):
     python src/export_powerbi.py
 """
 
@@ -18,11 +18,11 @@ SRC = ROOT / "data" / "processed"
 OUT = SRC / "powerbi"
 
 STATUS_LABELS = {
-    "on_time": "A tiempo",
-    "late": "Tarde",
-    "not_delivered": "No entregado",
-    "canceled": "Cancelado",
-    "other": "En proceso",
+    "on_time": "On time",
+    "late": "Late",
+    "not_delivered": "Not delivered",
+    "canceled": "Canceled",
+    "other": "In progress",
 }
 STATE_NAMES = {
     "AC": "Acre", "AL": "Alagoas", "AM": "Amazonas", "AP": "Amapá", "BA": "Bahia", "CE": "Ceará",
@@ -67,7 +67,7 @@ def main() -> None:
     risk.to_csv(OUT / "risk_orders.csv", index=False)
 
     for f in sorted(OUT.glob("*.csv")):
-        print(f"{f.name:20s} {sum(1 for _ in open(f, encoding='utf-8')) - 1:>8,} filas")
+        print(f"{f.name:20s} {sum(1 for _ in open(f, encoding='utf-8')) - 1:>8,} rows")
 
 
 if __name__ == "__main__":

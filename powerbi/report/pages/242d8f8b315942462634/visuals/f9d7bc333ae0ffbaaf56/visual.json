@@ -23,12 +23,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Reseñas negativas por retraso"
+                  "Property": "Negative reviews from delays"
                 }
               },
-              "queryRef": "fact_orders.Reseñas negativas por retraso",
-              "nativeQueryRef": "Reseñas negativas por retraso",
-              "displayName": "Negativas extra"
+              "queryRef": "fact_orders.Negative reviews from delays",
+              "nativeQueryRef": "Negative reviews from delays",
+              "displayName": "Extra negatives"
             },
             {
               "field": {
@@ -38,12 +38,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "% reseñas negativas"
+                  "Property": "% negative reviews"
                 }
               },
-              "queryRef": "fact_orders.% reseñas negativas",
-              "nativeQueryRef": "% reseñas negativas",
-              "displayName": "% negativas"
+              "queryRef": "fact_orders.% negative reviews",
+              "nativeQueryRef": "% negative reviews",
+              "displayName": "% negative"
             },
             {
               "field": {
@@ -53,12 +53,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Días de retraso (prom. tardíos)"
+                  "Property": "Days late (avg, late orders)"
                 }
               },
-              "queryRef": "fact_orders.Días de retraso (prom. tardíos)",
-              "nativeQueryRef": "Días de retraso (prom. tardíos)",
-              "displayName": "Días de retraso"
+              "queryRef": "fact_orders.Days late (avg, late orders)",
+              "nativeQueryRef": "Days late (avg, late orders)",
+              "displayName": "Days late"
             },
             {
               "field": {
@@ -68,12 +68,12 @@
                       "Entity": "fact_orders"
                     }
                   },
-                  "Property": "Ticket promedio"
+                  "Property": "Average order value"
                 }
               },
-              "queryRef": "fact_orders.Ticket promedio",
-              "nativeQueryRef": "Ticket promedio",
-              "displayName": "Ticket promedio"
+              "queryRef": "fact_orders.Average order value",
+              "nativeQueryRef": "Average order value",
+              "displayName": "Average order value"
             }
           ]
         }
@@ -242,7 +242,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Impacto de los retrasos'"
+                  "Value": "'Impact of delays'"
                 }
               }
             },

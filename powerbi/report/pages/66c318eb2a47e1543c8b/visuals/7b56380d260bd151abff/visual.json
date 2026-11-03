@@ -23,12 +23,12 @@
                       "Entity": "risk_orders"
                     }
                   },
-                  "Property": "Tasa de retraso (prueba)"
+                  "Property": "Late rate (test)"
                 }
               },
-              "queryRef": "risk_orders.Tasa de retraso (prueba)",
-              "nativeQueryRef": "Tasa de retraso (prueba)",
-              "displayName": "Tasa base de retraso"
+              "queryRef": "risk_orders.Late rate (test)",
+              "nativeQueryRef": "Late rate (test)",
+              "displayName": "Base late rate"
             }
           ]
         }

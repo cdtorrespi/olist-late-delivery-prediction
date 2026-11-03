@@ -1,153 +1,153 @@
 // =====================================================================
-// Medidas DAX del dashboard "Entregas y satisfacción - Olist"
-// Tabla anfitriona: fact_orders (Ingresos, Logística, Calificación)
-//                   risk_orders (Riesgo)
-// Cada medida indica su carpeta de visualización y su formato.
+// DAX measures for the "Deliveries and satisfaction - Olist" dashboard
+// Home table: fact_orders (Revenue, Logistics, Rating)
+//             risk_orders (Risk)
+// Each measure notes its display folder and its format.
 // =====================================================================
 
-// ---------------- Carpeta: Ingresos ----------------
+// ---------------- Folder: Revenue ----------------
 
-// Pedidos del periodo (2017-01 a 2018-08), cualquier estado
-[Pedidos] =
+// Orders in the period (2017-01 to 2018-08), any status
+[Orders] =
 COUNTROWS ( fact_orders )
-// formato: #,0
+// format: #,0
 
-// Valor bruto de mercancía: precio + flete, sin pedidos cancelados
-[Ingresos (GMV)] =
+// Gross merchandise value: price + freight, excluding canceled orders
+[Revenue (GMV)] =
 CALCULATE (
     SUM ( fact_orders[gmv] ),
     fact_orders[delivery_status] <> "canceled"
 )
-// formato: "R$" #,0
+// format: "R$" #,0
 
-[Ticket promedio] =
+[Average order value] =
 CALCULATE (
     AVERAGE ( fact_orders[gmv] ),
     fact_orders[delivery_status] <> "canceled"
 )
-// formato: "R$" #,0.00
+// format: "R$" #,0.00
 
-[Ingresos mes anterior] =
-CALCULATE ( [Ingresos (GMV)], DATEADD ( dim_date[Date], -1, MONTH ) )
-// formato: "R$" #,0
+[Revenue previous month] =
+CALCULATE ( [Revenue (GMV)], DATEADD ( dim_date[Date], -1, MONTH ) )
+// format: "R$" #,0
 
-[Crecimiento mensual %] =
-DIVIDE ( [Ingresos (GMV)] - [Ingresos mes anterior], [Ingresos mes anterior] )
-// formato: 0.0%
+[Monthly growth %] =
+DIVIDE ( [Revenue (GMV)] - [Revenue previous month], [Revenue previous month] )
+// format: 0.0%
 
-// ---------------- Carpeta: Logística ----------------
+// ---------------- Folder: Logistics ----------------
 
-// Pedidos cuyo resultado de entrega se conoce (a tiempo, tarde o no entregado)
-[Pedidos con resultado] =
+// Orders whose delivery outcome is known (on time, late or not delivered)
+[Orders with outcome] =
 CALCULATE ( COUNTROWS ( fact_orders ), NOT ISBLANK ( fact_orders[is_late] ) )
-// formato: #,0
+// format: #,0
 
-[Pedidos no a tiempo] =
+[Orders not on time] =
 SUM ( fact_orders[is_late] )
-// formato: #,0
+// format: #,0
 
-[% a tiempo] =
-1 - DIVIDE ( [Pedidos no a tiempo], [Pedidos con resultado] )
-// formato: 0.0%
+[% on time] =
+1 - DIVIDE ( [Orders not on time], [Orders with outcome] )
+// format: 0.0%
 
-[% no a tiempo] =
-DIVIDE ( [Pedidos no a tiempo], [Pedidos con resultado] )
-// formato: 0.0%
+[% not on time] =
+DIVIDE ( [Orders not on time], [Orders with outcome] )
+// format: 0.0%
 
-[Días prometidos (prom.)] =
+[Promised days (avg)] =
 CALCULATE (
     AVERAGE ( fact_orders[promised_days] ),
     NOT ISBLANK ( fact_orders[is_late] )
 )
-// formato: 0.0
+// format: 0.0
 
-[Días reales (prom.)] =
+[Actual days (avg)] =
 CALCULATE (
     AVERAGE ( fact_orders[actual_days] ),
     fact_orders[delivery_status] IN { "on_time", "late" }
 )
-// formato: 0.0
+// format: 0.0
 
-[Días de retraso (prom. tardíos)] =
+[Days late (avg, late orders)] =
 CALCULATE (
     AVERAGE ( fact_orders[days_vs_estimate] ),
     fact_orders[delivery_status] = "late"
 )
-// formato: 0.0
+// format: 0.0
 
-[Colchón promedio (días)] =
-[Días prometidos (prom.)] - [Días reales (prom.)]
-// formato: 0.0
+[Average buffer (days)] =
+[Promised days (avg)] - [Actual days (avg)]
+// format: 0.0
 
-// ---------------- Carpeta: Calificación ----------------
+// ---------------- Folder: Rating ----------------
 
-[Calificación promedio] =
+[Average rating] =
 AVERAGE ( fact_orders[review_score] )
-// formato: 0.00
+// format: 0.00
 
-[Reseñas] =
+[Reviews] =
 COUNT ( fact_orders[review_score] )
-// formato: #,0
+// format: #,0
 
-[Reseñas negativas] =
+[Negative reviews] =
 CALCULATE ( COUNT ( fact_orders[review_score] ), fact_orders[review_score] <= 2 )
-// formato: #,0
+// format: #,0
 
-[% reseñas negativas] =
-DIVIDE ( [Reseñas negativas], [Reseñas] )
-// formato: 0.0%
+[% negative reviews] =
+DIVIDE ( [Negative reviews], [Reviews] )
+// format: 0.0%
 
-// Reseñas negativas "de más" por los retrasos: las que tienen los pedidos
-// no a tiempo menos las que tendrían con la tasa de los pedidos a tiempo.
-[Reseñas negativas por retraso] =
-VAR ResenasTarde =
-    CALCULATE ( [Reseñas], fact_orders[is_late] = 1 )
-VAR NegativasTarde =
-    CALCULATE ( [Reseñas negativas], fact_orders[is_late] = 1 )
-// Se filtra por estado (no por is_late = 0) porque en DAX un BLANK es igual a 0
-// y se colarían los pedidos cancelados o en proceso.
-VAR TasaATiempo =
-    CALCULATE ( [% reseñas negativas], fact_orders[delivery_status] = "on_time" )
+// "Extra" negative reviews caused by delays: the ones on orders that were
+// not on time minus the ones they would have at the on-time rate.
+[Negative reviews from delays] =
+VAR LateReviews =
+    CALCULATE ( [Reviews], fact_orders[is_late] = 1 )
+VAR LateNegatives =
+    CALCULATE ( [Negative reviews], fact_orders[is_late] = 1 )
+// Filter by status (not by is_late = 0) because in DAX a BLANK equals 0
+// and canceled or in-progress orders would slip in.
+VAR OnTimeRate =
+    CALCULATE ( [% negative reviews], fact_orders[delivery_status] = "on_time" )
 RETURN
-    MAX ( 0, NegativasTarde - ResenasTarde * TasaATiempo )
-// formato: #,0
+    MAX ( 0, LateNegatives - LateReviews * OnTimeRate )
+// format: #,0
 
-// ---------------- Carpeta: Riesgo (tabla risk_orders) ----------------
+// ---------------- Folder: Risk (risk_orders table) ----------------
 
-[Pedidos evaluados] =
+[Orders evaluated] =
 COUNTROWS ( risk_orders )
-// formato: #,0
+// format: #,0
 
-[Pedidos marcados] =
+[Orders flagged] =
 SUM ( risk_orders[flag_high_risk] )
-// formato: #,0
+// format: #,0
 
-[% pedidos marcados] =
-DIVIDE ( [Pedidos marcados], [Pedidos evaluados] )
-// formato: 0.0%
+[% orders flagged] =
+DIVIDE ( [Orders flagged], [Orders evaluated] )
+// format: 0.0%
 
-[% retrasos capturados] =
+[% late orders caught] =
 DIVIDE (
     CALCULATE ( SUM ( risk_orders[is_late] ), risk_orders[flag_high_risk] = 1 ),
     SUM ( risk_orders[is_late] )
 )
-// formato: 0.0%
+// format: 0.0%
 
-[Precisión de la alerta] =
+[Alert precision] =
 DIVIDE (
     CALCULATE ( SUM ( risk_orders[is_late] ), risk_orders[flag_high_risk] = 1 ),
-    [Pedidos marcados]
+    [Orders flagged]
 )
-// formato: 0.0%
+// format: 0.0%
 
-[Tasa de retraso (prueba)] =
-DIVIDE ( SUM ( risk_orders[is_late] ), [Pedidos evaluados] )
-// formato: 0.0%
+[Late rate (test)] =
+DIVIDE ( SUM ( risk_orders[is_late] ), [Orders evaluated] )
+// format: 0.0%
 
-[Probabilidad promedio] =
+[Average probability] =
 AVERAGE ( risk_orders[late_probability] )
-// formato: 0.0%
+// format: 0.0%
 
-[Colchón promedio (ratio)] =
+[Average buffer (ratio)] =
 AVERAGE ( risk_orders[promise_ratio] )
-// formato: 0.00"x"
+// format: 0.00"x"
