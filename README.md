@@ -1,92 +1,92 @@
-# Late Delivery Risk at Olist: SQL, Machine Learning and Power BI
+# Riesgo de entrega tardía en Olist: SQL, machine learning y Power BI
 
-Can an online marketplace tell, at the moment of purchase, which orders are going to arrive late? If it can, it has time to promise a more realistic date or to push those orders through faster, before the customer leaves a bad review.
+Proyecto para identificar, al momento de la compra, qué pedidos de un marketplace en línea tienen más riesgo de llegar tarde. Con esa información se puede prometer una fecha más realista o acelerar esos pedidos antes de que el cliente deje una mala reseña.
 
-I worked through that question with 100k real orders from Olist, a Brazilian marketplace: PostgreSQL for the data model, Python for the analysis and the model, and Power BI for the dashboard.
+Usé 100 mil pedidos reales de Olist, un marketplace brasileño: PostgreSQL para el modelo de datos, Python para el análisis y el modelo, y Power BI para el dashboard.
 
-## What I found
+## Hallazgos
 
-Late deliveries are the main driver of bad reviews. Late orders average 2.3 stars, against 4.3 for orders that arrive on time, and 62% of their reviews are negative (1 or 2 stars), compared with 9% for on-time orders. In total, delays account for about 4,000 extra negative reviews, 31% of all the negative reviews in the period.
+Los retrasos son la principal causa de las malas reseñas. Los pedidos tardíos promedian 2.3 estrellas contra 4.3 de los que llegan a tiempo, y el 62% de sus reseñas son negativas (1 o 2 estrellas), contra 9% en los pedidos puntuales. En total, los retrasos explican unas 4,000 reseñas negativas adicionales, el 31% de todas las del periodo.
 
-The best warning sign is how much slack the promised date leaves. I measure it as a ratio: promised delivery days divided by how long the same route (seller's state to customer's state) actually took over the last 90 days. Among orders with the tightest ratio, 19% arrive late. Among those with the most slack, fewer than 4% do.
+La mejor señal de alerta es el margen que deja la fecha prometida. La mido como una razón: días prometidos entre lo que tardó la misma ruta (estado del vendedor a estado del cliente) en los últimos 90 días. Entre los pedidos con la razón más ajustada, el 19% llega tarde; entre los de mayor margen, menos del 4%.
 
-That ratio on its own beats the machine learning models. Flagging the 10% of orders with the tightest ratio catches 29.4% of all late orders (95% CI: 27.4–31.3%), roughly three times what random selection would catch. I tested this on April–August 2018, a period no model saw during development. Logistic regression and gradient boosting, trained on 26 features, both caught about 3.5 percentage points fewer late orders, and the gap is statistically significant.
+Esa razón por sí sola supera a los modelos de machine learning. Si se marca el 10% de pedidos con la razón más ajustada, se detecta el 29.4% de todos los retrasos (IC 95%: 27.4–31.3%), unas tres veces lo que detectaría una selección al azar. Lo evalué en abril–agosto de 2018, un periodo que ningún modelo vio durante el desarrollo. La regresión logística y el gradient boosting, entrenados con 26 variables, detectaron unos 3.5 puntos porcentuales menos, y la diferencia es estadísticamente significativa.
 
-A month-by-month backtest tells the same story. Olist's delivery times changed quickly in 2018, and the models aged badly: gradient boosting fell below random in August 2018. The ratio never dropped below 16.7%.
+Un backtest mes por mes confirma lo mismo. Los tiempos de entrega de Olist cambiaron rápido en 2018 y los modelos envejecieron mal: el gradient boosting quedó por debajo del azar en agosto de 2018, mientras que la razón nunca bajó de 16.7%.
 
-## Recommendation
+## Recomendación
 
-1. **Set a minimum buffer on the promised date.** Never promise less than 1.3 times the route's recent delivery time. Over the test period, this would have pushed back the date for 22% of orders, by 3.6 days on average, and 398 late orders (23%) would have arrived on time. A longer promise can cost sales, and this dataset only contains completed purchases, so it should launch as an A/B test.
-2. **Give the logistics team a daily alert.** Flag orders whose ratio falls below the 10th percentile of the last 30 days. In the test period the alert flagged 13% of orders and caught 33% of late deliveries; 13.5% of flagged orders were late, 2.5 times the base rate. The threshold adjusts itself, so nothing needs retraining.
+1. Fijar un margen mínimo en la fecha prometida: nunca prometer menos de 1.3 veces el tiempo reciente de la ruta. En el periodo de prueba, esto habría movido la fecha del 22% de los pedidos, 3.6 días en promedio, y 398 pedidos tardíos (23%) habrían llegado a tiempo. Una promesa más larga puede costar ventas, y estos datos solo incluyen compras concretadas, así que conviene lanzarlo como prueba A/B.
+2. Dar al equipo de logística una alerta diaria con los pedidos cuya razón quede por debajo del percentil 10 de los últimos 30 días. En el periodo de prueba, la alerta marcó el 13% de los pedidos y detectó el 33% de los retrasos; el 13.5% de los pedidos marcados llegó tarde, 2.5 veces la tasa base. El umbral se ajusta solo, así que no hay que reentrenar nada.
 
 ## Dashboard
 
-![Executive page of the Power BI dashboard](assets/dashboard.png)
+![Página ejecutiva del dashboard de Power BI](assets/dashboard.png)
 
-The Power BI report has three pages: an executive summary (revenue, orders, on-time rate, rating), a logistics view (late deliveries by state, promised vs. actual days, sellers with the most delays) and a risk view that lists the test-period orders from tightest to loosest buffer.
+El reporte de Power BI tiene tres páginas: un resumen ejecutivo (ingresos, pedidos, tasa de entregas a tiempo y calificación), una vista de logística (retrasos por estado, días prometidos contra reales y vendedores con más retrasos) y una vista de riesgo que ordena los pedidos del periodo de prueba del margen más ajustado al más holgado.
 
-| Logistics | Risk |
+| Logística | Riesgo |
 |---|---|
-| ![Logistics page](assets/dashboard_logistica.png) | ![Risk page](assets/dashboard_riesgo.png) |
+| ![Página de logística](assets/dashboard_logistica.png) | ![Página de riesgo](assets/dashboard_riesgo.png) |
 
-The data model, the DAX measures and the report definition are in [`powerbi/`](powerbi/).
+El modelo de datos, las medidas DAX y la definición del reporte están en [`powerbi/`](powerbi/).
 
-## How I built it
+## Cómo lo construí
 
-| Stage | Tools | What it does |
+| Etapa | Herramientas | Qué hace |
 |---|---|---|
-| Data model | PostgreSQL 16 | Loads the 9 source tables into a dimensional model with two fact tables at different grains (`fact_orders` per order, `fact_order_items` per item) and shared customer, seller, product and date dimensions. The analysis queries use CTEs and window functions (`LAG`, `RANK`, running totals, Pareto shares). |
-| Exploration | pandas, matplotlib | Target balance, trends over time, effect on reviews, data quality. |
-| Features | pandas | History features for sellers and routes that only use information available at purchase time. |
-| Model | scikit-learn | Ratio rule vs. logistic regression vs. gradient boosting, chosen on a validation period, tested out of time, with bootstrap confidence intervals, a monthly backtest and permutation importance. |
-| Dashboard | Power BI, DAX | Two fact tables (all orders and test-period risk scores) sharing the same dimensions, with one-to-many, single-direction relationships. 26 measures, each checked against SQL. |
+| Modelo de datos | PostgreSQL 16 | Carga las 9 tablas originales en un modelo dimensional con dos tablas de hechos a distinta granularidad (`fact_orders` por pedido y `fact_order_items` por artículo) y dimensiones compartidas de cliente, vendedor, producto y fecha. Las consultas de análisis usan CTE y funciones de ventana (`LAG`, `RANK`, acumulados y participación tipo Pareto). |
+| Exploración | pandas, matplotlib | Balance de la variable objetivo, tendencias en el tiempo, efecto en las reseñas y calidad de datos. |
+| Variables | pandas | Historial de vendedores y rutas usando solo información disponible al momento de la compra. |
+| Modelo | scikit-learn | Regla de la razón contra regresión logística y gradient boosting, elegidos en un periodo de validación y evaluados fuera de tiempo, con intervalos bootstrap, backtest mensual e importancia por permutación. |
+| Dashboard | Power BI, DAX | Dos tablas de hechos (todos los pedidos y los puntajes de riesgo del periodo de prueba) con las mismas dimensiones y relaciones uno a muchos en una sola dirección. 26 medidas, cada una verificada contra SQL. |
 
-### Decisions worth explaining
+### Decisiones de diseño
 
-- **What counts as late.** An order is late if it was delivered after the promised day. I also count the 1,097 orders that were shipped but never delivered: every one of them was past its promised date when the data ends, and leaving them out would hide the worst cases.
-- **No information from the future.** A seller's or route's history only includes orders whose outcome was already known at purchase time. An on-time order counts once it is delivered; a late one, once its promised day has passed. I checked the efficient implementation against a brute-force version on 500 random orders, and they matched exactly.
-- **Features that age badly were removed.** Purchase month and absolute order volumes let the models memorize the training period, so I dropped them. The 90-day window for route history was chosen on the validation period.
-- **A metric the business can use.** The main metric is the share of late orders caught when the team can only review 10% of orders. With 7.8% late orders, accuracy would be misleading, so I also report AUC-PR, with AUC-ROC for reference.
+- Qué cuenta como retraso: un pedido llega tarde si se entregó después del día prometido. También cuento los 1,097 pedidos enviados que nunca se entregaron, porque todos ya habían pasado su fecha prometida cuando terminan los datos; dejarlos fuera escondería los peores casos.
+- Sin información del futuro: el historial de un vendedor o de una ruta solo incluye pedidos cuyo resultado ya se conocía al momento de la compra. Un pedido a tiempo cuenta desde que se entrega; uno tardío, desde que pasa su día prometido. Comparé la implementación eficiente con una versión de fuerza bruta en 500 pedidos al azar y coincidieron exactamente.
+- Quité variables que envejecen mal: el mes de compra y los volúmenes absolutos de pedidos hacían que los modelos memorizaran el periodo de entrenamiento. La ventana de 90 días para el historial de rutas se eligió en el periodo de validación.
+- Una métrica útil para el negocio: la métrica principal es la proporción de retrasos detectados cuando el equipo solo puede revisar el 10% de los pedidos. Con 7.8% de pedidos tardíos, la exactitud sería engañosa, así que también reporto AUC-PR, y AUC-ROC como referencia.
 
-## Repository structure
+## Estructura del repositorio
 
 ```
 ├── sql/
-│   ├── 01_create_raw_tables.sql    # raw schema (9 tables)
-│   ├── 02_load_raw.sql             # loads the CSVs
-│   ├── 03_star_schema.sql          # analytics schema: dimensions, facts, integrity checks
-│   ├── 04_analysis.sql             # business questions (CTEs, window functions)
-│   └── 05_export_model_base.sql    # exports for Python and Power BI
+│   ├── 01_create_raw_tables.sql    # esquema de datos crudos (9 tablas)
+│   ├── 02_load_raw.sql             # carga de los CSV
+│   ├── 03_star_schema.sql          # esquema analítico: dimensiones, hechos y validaciones de integridad
+│   ├── 04_analysis.sql             # preguntas de negocio (CTE, funciones de ventana)
+│   └── 05_export_model_base.sql    # exportaciones para Python y Power BI
 ├── notebooks/
 │   ├── 01_eda.ipynb
 │   ├── 02_features.ipynb
 │   └── 03_model.ipynb
 ├── src/
-│   ├── features.py                 # feature engineering
-│   ├── export_powerbi.py           # builds the Power BI tables
+│   ├── features.py                 # construcción de variables
+│   ├── export_powerbi.py           # genera las tablas de Power BI
 │   └── plot_style.py
-├── powerbi/                        # data model, DAX measures, report pages, validation
+├── powerbi/                        # modelo de datos, medidas DAX, páginas del reporte y validación
 ├── reports/
-│   ├── reporte_tecnico.pdf         # technical report (Spanish)
-│   ├── model_metrics.json          # experiment settings and results
+│   ├── reporte_tecnico.pdf         # reporte técnico
+│   ├── model_metrics.json          # configuración y resultados de los experimentos
 │   ├── figures/
-│   └── sql_results/                # outputs of 04_analysis.sql
-├── data/                           # raw data is not versioned; see data/README.md
+│   └── sql_results/                # resultados de 04_analysis.sql
+├── data/                           # los datos crudos no se versionan; ver data/README.md
 └── assets/
 ```
 
-## How to reproduce it
+## Cómo reproducirlo
 
-You need PostgreSQL 16+ and Python 3.11+.
+Se necesita PostgreSQL 16+ y Python 3.11+.
 
 ```bash
 pip install -r requirements.txt
 
-# 1. Data (see data/README.md)
+# 1. Datos (ver data/README.md)
 git clone --depth 1 https://github.com/olist/work-at-olist-data.git /tmp/olist
 cp /tmp/olist/datasets/*.csv data/raw/
 
-# 2. Database
+# 2. Base de datos
 createdb olist
 psql -d olist -f sql/01_create_raw_tables.sql
 psql -d olist -v data_dir="$PWD/data/raw" -f sql/02_load_raw.sql
@@ -94,24 +94,26 @@ psql -d olist -f sql/03_star_schema.sql
 psql -d olist -v out_dir="$PWD/reports/sql_results" -f sql/04_analysis.sql
 psql -d olist -v out_dir="$PWD/data/processed" -f sql/05_export_model_base.sql
 
-# 3. Notebooks, in order, then the Power BI tables
+# 3. Notebooks en orden y después las tablas de Power BI
 jupyter nbconvert --to notebook --execute --inplace notebooks/0*.ipynb
 python src/export_powerbi.py
 ```
 
-The model notebook takes about 3 minutes on a laptop. All random seeds are fixed.
+El notebook del modelo tarda unos 3 minutos en una laptop. Todas las semillas aleatorias están fijas.
 
-## Limitations
+## Limitaciones
 
-- The data only covers completed purchases, so I cannot measure how many sales a longer promised date would cost. That is why the recommendation is an A/B test.
-- The data ends in August 2018 and reflects Olist's marketplace at that time.
-- The link between delays and negative reviews is correlational. Late and on-time orders may also differ in other ways.
+- Los datos solo incluyen compras concretadas, así que no puedo medir cuántas ventas costaría una fecha prometida más larga. Por eso la recomendación es una prueba A/B.
+- Los datos terminan en agosto de 2018 y reflejan el marketplace de Olist en ese momento.
+- La relación entre retrasos y reseñas negativas es correlacional: los pedidos tardíos y los puntuales también pueden diferir en otras cosas.
 
-## Data
+## Datos
 
-[Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), about 100k orders from 2016 to 2018, published by Olist.
+[Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), unos 100 mil pedidos de 2016 a 2018, publicado por Olist.
 
-## Author
+## Autor
 
-Carlos Daniel Torres Pillado, data analyst with a background in applied statistics.
-[cdtorres.pi@gmail.com](mailto:cdtorres.pi@gmail.com)
+Carlos Daniel Torres Pillado, analista de datos con formación en estadística aplicada. Chihuahua, México.
+
+- GitHub: [@cdtorrespi](https://github.com/cdtorrespi)
+- Correo: [cdtorres.pi@gmail.com](mailto:cdtorres.pi@gmail.com)
